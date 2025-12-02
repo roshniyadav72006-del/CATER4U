@@ -1,50 +1,44 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import connectDB from "@/lib/mongoose";
 import User from "@/models/User";
+import { sendEmail } from "@/lib/nodemailer";
+import crypto from "crypto";
 
-export async function POST(request) {
+export async function POST(req) {
   try {
     await connectDB();
-    const { username, email, password, phone, address } = await request.json();
+    const { username, email, password } = await req.json();
 
-    if (!username || !email || !password || !phone || !address) {
-      return NextResponse.json({ message: "All fields required" }, { status: 400 });
-    }
-
-    // ✅ Phone validation added here
-    const phoneRegex = /^[6-9]\d{9}$/; 
-    if (!phoneRegex.test(phone)) {
-      return NextResponse.json(
-        { message: "Invalid Indian phone number (10 digits required)" },
-        { status: 400 }
-      );
+    if (!username || !email || !password) {
+      return NextResponse.json({ error: "All fields required" }, { status: 400 });
     }
 
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return NextResponse.json({ message: "User already exists" }, { status: 409 });
+      return NextResponse.json({ error: "Email already registered" }, { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const verifyToken = crypto.randomBytes(32).toString("hex");
 
-    await User.create({
+    const user = await User.create({
       username,
       email,
-      password: hashedPassword,
-      phone,
-      address,
+      password,
+      verifyToken,
     });
 
-    return NextResponse.json(
-      { message: "User registered successfully" },
-      { status: 201 }
-    );
+    // Send verification email
+    const link = `${process.env.BASE_URL}/verify/${verifyToken}`;
+
+    await sendEmail({
+      to: email,
+      subject: "Verify your Cater4U Account",
+      html: `<p>Click the link to verify your account:</p><a href="${link}">Verify Account</a>`,
+    });
+
+    return NextResponse.json({ message: "Registered! Check your email." });
   } catch (error) {
-    console.error("Registration route error:", error);
-    return NextResponse.json(
-      { message: "Server error", error: error.message },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

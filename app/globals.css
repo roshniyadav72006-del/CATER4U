@@ -1,34 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg0: oklch(87.2% 0.01 258.338);
+  --bg1: oklch(92.2% 0 0);
+  --bg2: oklch(98.5% 0 0);
+  --text-primary: oklch(14.5% 0 0);
+  --text-muted: oklch(43.9% 0 0);
+  --accent: oklch(54.1% 0.281 293.009);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #171717u
-    ;
+    /* write your dark mode themes here--> */
   }
 }
 
+@theme inline {
+  --color-bg-0: var(--bg0);
+  --color-bg-1: var(--bg1);
+  --color-bg-2: var(--bg2);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg0);
+  color: var(--text-primary);
+  font-family: Arial, Helvetica, sans-serif;
 }
-
-input::placeholder {
-  font-weight: 700;
-  color: #9ca3af; 
-}
-
-
