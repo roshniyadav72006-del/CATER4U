@@ -7,9 +7,9 @@ import crypto from "crypto";
 export async function POST(req) {
   try {
     await connectDB();
-    const { username, email, password } = await req.json();
+    const { username, email, password, phone, address } = await req.json();
 
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !phone || !address) {
       return NextResponse.json({ error: "All fields required" }, { status: 400 });
     }
 
@@ -24,6 +24,8 @@ export async function POST(req) {
       username,
       email,
       password,
+      phone,
+      address,
       verifyToken,
     });
 
@@ -38,7 +40,7 @@ export async function POST(req) {
 
     return NextResponse.json({ message: "Registered! Check your email." });
   } catch (error) {
-    console.log(error);
+    console.log("Error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
