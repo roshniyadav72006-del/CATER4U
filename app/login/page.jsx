@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
 
 export default function LoginPage() {
@@ -14,7 +14,7 @@ export default function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
@@ -23,14 +23,37 @@ export default function LoginPage() {
       return;
     }
 
-    alert("Login Successful ");
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          identifier: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Something went wrong");
+        return;
+      }
+
+      console.log("LOGIN SUCCESS:", data);
+      // redirect if needed
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.log(error);
+      setError("Server error");
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-200 p-6">
-
       <div className="flex w-[900px] max-w-full h-[500px] bg-white shadow-xl rounded-[28px] overflow-hidden">
-
         {/* LEFT SIDE */}
         <div className="w-[45%] bg-gradient-to-b from-purple-700 to-purple-500 text-white flex flex-col items-center justify-center gap-3 p-10">
           <h1 className="text-4xl font-bold">Welcome Back</h1>
@@ -49,7 +72,6 @@ export default function LoginPage() {
 
         {/* RIGHT SIDE FORM */}
         <div className="w-[55%] p-10 flex flex-col justify-center">
-
           <h2 className="text-3xl font-bold text-center mb-6">LOGIN</h2>
 
           <form onSubmit={handleSubmit}>
@@ -81,7 +103,10 @@ export default function LoginPage() {
 
             {/* Forget Password */}
             <div className="flex justify-center mb-3">
-              <a href="/forgot-password" className="text-purple-700 text-center font-semibold hover:underline">
+              <a
+                href="/forgot-password"
+                className="text-purple-700 text-center font-semibold hover:underline"
+              >
                 Forget Password?
               </a>
             </div>
@@ -100,7 +125,6 @@ export default function LoginPage() {
             >
               LOGIN
             </button>
-
           </form>
         </div>
       </div>

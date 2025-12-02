@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongoose";
 import User from "@/models/User";
 import { sendEmail } from "@/lib/nodemailer";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 export async function POST(req) {
   try {
@@ -19,11 +20,11 @@ export async function POST(req) {
     }
 
     const verifyToken = crypto.randomBytes(32).toString("hex");
-
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       username,
       email,
-      password,
+      password: hashedPassword,
       phone,
       address,
       verifyToken,
