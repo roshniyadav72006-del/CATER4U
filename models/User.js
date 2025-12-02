@@ -19,6 +19,13 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verifyToken: {
+      type: String,
+    },
     // New Field 1: Phone Number
     phone: {
       type: String, // Use String for phone numbers to handle formatting like +1-555-xxx-xxxx

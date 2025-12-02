@@ -27,6 +27,7 @@ export async function POST(req) {
       password: hashedPassword,
       phone,
       address,
+      isVerified: false,
       verifyToken,
     });
 
