@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import User from "@/models/User";
 import connectDB from "@/lib/mongoose";
-import { transporter } from "@/lib/nodemailer";
+import { sendEmail } from "@/lib/nodemailer";
 
 export async function POST(req) {
   try {
@@ -10,25 +10,38 @@ export async function POST(req) {
     const { email } = await req.json();
 
     const user = await User.findOne({ email });
-    if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 });
+    if (!user)
+      return NextResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "30m" });
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "30m" }
+    );
 
     const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password/${token}`;
 
-    await transporter.sendMail({
-      from: `"Cater4U" <${process.env.EMAIL_USER}>`,
+    await sendEmail({
       to: email,
       subject: "Reset Your Password",
       html: `
-        <p>Click to reset your password:</p>
-        <a href="${resetLink}">${resetLink}</a>
+        <p>Hello,</p>
+        <p>You requested to reset your Cater4U password.</p>
+        <p>Click the link below:</p>
+        <a href="${resetLink}" target="_blank">${resetLink}</a>
+        <p>This link is valid for 30 minutes.</p>
       `,
     });
 
     return NextResponse.json({ message: "Reset email sent!" });
 
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
+    );
   }
 }

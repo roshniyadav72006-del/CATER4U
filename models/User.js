@@ -26,12 +26,22 @@ const userSchema = new Schema(
     verifyToken: {
       type: String,
     },
+
+    // ⭐ Added Fields for Reset Password
+    resetToken: {
+      type: String,
+    },
+    resetTokenExpire: {
+      type: Date,
+    },
+
     // New Field 1: Phone Number
     phone: {
       type: String, // Use String for phone numbers to handle formatting like +1-555-xxx-xxxx
       required: true,
       unique: false,
     },
+
     // New Field 2: Address
     address: {
       type: String,
