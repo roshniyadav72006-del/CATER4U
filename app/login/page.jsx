@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
-
+import Image from "next/image";
 export default function LoginPage() {
   const [form, setForm] = useState({
     email: "",
@@ -71,7 +71,12 @@ export default function LoginPage() {
         </div>
 
         {/* RIGHT SIDE FORM */}
+        
         <div className="w-[55%] p-10 flex flex-col justify-center">
+          <div className="flex flex-row items-center justify-center">
+          <Image src="/logo.png" alt="logo" width={60} height={60}/>
+          <h1 className="text-4xl font-bold">CATER4U</h1>
+          </div>
           <h2 className="text-3xl font-bold text-center mb-6">LOGIN</h2>
 
           <form onSubmit={handleSubmit}>
