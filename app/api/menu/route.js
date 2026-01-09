@@ -1,16 +1,30 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongoose";
+import { verifyAdmin } from "@/lib/middleware/admin";
 import Menu from "@/models/Menu";
+import connectDB from "@/lib/mongoose";
 
-export async function POST(req) {
-  await connectDB();
-  const data = await req.json();
-  const menu = await Menu.create(data);
-  return NextResponse.json(menu);
-}
-
+// GET → USER + ADMIN
 export async function GET() {
   await connectDB();
   const menu = await Menu.find();
   return NextResponse.json(menu);
+}
+
+// POST → ONLY ADMIN
+export async function POST(req) {
+  try {
+    await verifyAdmin(req); // 🔐 admin check
+
+    await connectDB();
+    const body = await req.json();
+
+    const item = await Menu.create(body);
+    return NextResponse.json(item, { status: 201 });
+
+  } catch (err) {
+    return NextResponse.json(
+      { message: err.message },
+      { status: 403 }
+    );
+  }
 }
