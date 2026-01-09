@@ -1,10 +1,11 @@
 import Image from "next/image";
+import AboutUs from "@/components/ui/AboutUs";
 
 export default function Home() {
   return (
     <div className="w-full bg-white">
 
-      {/* HERO */}
+      {/* ================= HERO SECTION ================= */}
       <div className="relative w-full h-[450px] overflow-hidden">
 
         {/* Image */}
@@ -40,7 +41,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CLEAN CURVE */}
+        {/* Bottom Curve */}
         <svg
           className="absolute bottom-0 left-0 w-full"
           viewBox="0 0 1440 90"
@@ -51,8 +52,56 @@ export default function Home() {
             fill="white"
           />
         </svg>
-
       </div>
+
+      {/* ================= INTRODUCTION SECTION ================= */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 items-center">
+
+          {/* LEFT IMAGE */}
+          <div className="hidden md:block">
+            <Image
+              src="/intro-left.jpg"
+              alt="Indian spices"
+              width={400}
+              height={400}
+              className="object-contain"
+            />
+          </div>
+
+          {/* CENTER TEXT */}
+          <div className="text-center">
+            <p className="text-yellow-500 tracking-widest mb-3">
+              INTRODUCTION
+            </p>
+
+            <h2 className="text-4xl font-bold mb-6 text-gray-900">
+              Indian Vegetarian Catering
+            </h2>
+
+            <p className="text-gray-600 leading-relaxed">
+              We at Cater4U pride ourselves in providing quality service and
+              creating mouth-watering pure vegetarian cuisine.
+              <br /><br />
+              With over 30 years of experience, we specialise in marwadi and
+              Gujarati vegetarian catering, delivering unforgettable flavours
+              for every occasion.
+            </p>
+          </div>
+
+          {/* RIGHT IMAGE */}
+          <div className="hidden md:block">
+            <Image
+              src="/intro-right.png"
+              alt="Indian spices"
+              width={400}
+              height={400}
+              className="object-contain"
+            />
+          </div>
+
+        </div>
+      </section>
 
     </div>
   );
