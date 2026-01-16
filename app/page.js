@@ -1,14 +1,13 @@
 import Image from "next/image";
-import AboutUs from "@/components/ui/AboutUs";
-
+import Chatbot from "@/components/ui/chatbot";
 export default function Home() {
+ 
   return (
     <div className="w-full bg-white">
 
       {/* ================= HERO SECTION ================= */}
       <div className="relative w-full h-[450px] overflow-hidden">
 
-        {/* Image */}
         <Image
           src="/home.png"
           alt="Cater4U"
@@ -17,10 +16,8 @@ export default function Home() {
           className="object-cover"
         />
 
-        {/* Overlay */}
         <div className="absolute inset-0 bg-black/50" />
 
-        {/* Content */}
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center text-white px-6">
           <h1 className="text-5xl font-bold mb-4">
             Welcome to <span className="text-yellow-400">CATER4U</span>
@@ -41,7 +38,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bottom Curve */}
         <svg
           className="absolute bottom-0 left-0 w-full"
           viewBox="0 0 1440 90"
@@ -59,14 +55,16 @@ export default function Home() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 items-center">
 
           {/* LEFT IMAGE */}
-          <div className="hidden md:block">
-            <Image
-              src="/intro-left.jpg"
-              alt="Indian spices"
-              width={400}
-              height={400}
-              className="object-contain"
-            />
+          <div className="hidden md:flex justify-center">
+            <div className="relative w-[400px] h-[400px]">
+              <Image
+                src="/intro-left.jpg"
+                alt="Indian spices"
+                fill
+                className="object-contain"
+                sizes="400px"
+              />
+            </div>
           </div>
 
           {/* CENTER TEXT */}
@@ -90,14 +88,16 @@ export default function Home() {
           </div>
 
           {/* RIGHT IMAGE */}
-          <div className="hidden md:block">
-            <Image
-              src="/intro-right.png"
-              alt="Indian spices"
-              width={400}
-              height={400}
-              className="object-contain"
-            />
+          <div className="hidden md:flex justify-center">
+            <div className="relative w-[400px] h-[400px]">
+              <Image
+                src="/right.png"
+                alt="Indian spices"
+                fill
+                className="object-contain"
+                sizes="400px"
+              />
+            </div>
           </div>
 
         </div>

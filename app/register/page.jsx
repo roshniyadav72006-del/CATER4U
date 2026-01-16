@@ -15,36 +15,51 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // ✅ Email regex (proper domain validation)
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z-]+\.[a-zA-Z]{2,}$/;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
+    // 1️⃣ Empty field check
     if (!username || !email || !password || !confirmPassword || !phone || !address) {
       setError("All fields are required.");
       setLoading(false);
       return;
     }
 
+    // 2️⃣ Email validation
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address (example: name@gmail.com)");
+      setLoading(false);
+      return;
+    }
+
+    // 3️⃣ Password match check
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       setLoading(false);
       return;
     }
 
+    // 4️⃣ Password length check
     if (password.length < 6) {
       setError("Password must be at least 6 characters long.");
       setLoading(false);
       return;
     }
 
+    // 5️⃣ Indian phone number validation
     const phoneRegex = /^[6-9]\d{9}$/;
     if (!phoneRegex.test(phone)) {
-      setError("Phone number is invalid");
+      setError("Phone number is invalid.");
       setLoading(false);
       return;
     }
 
+    // 6️⃣ API call
     try {
       const response = await fetch("/api/register", {
         method: "POST",
@@ -64,7 +79,7 @@ export default function RegisterPage() {
         const data = await response.json();
         setError(data.message || "Registration failed.");
       }
-    } catch {
+    } catch (err) {
       setError("Unexpected error. Try again later.");
     } finally {
       setLoading(false);
@@ -88,7 +103,7 @@ export default function RegisterPage() {
 
           {/* LOGO */}
           <div className="flex flex-row items-center justify-center mb-6">
-            <Image src="/logo1.svg" alt="logo" width={60} height={60} />
+            <img src="/logo1.svg" alt="logo" className="h-14 w-auto" />
             <h1 className="text-4xl font-bold ml-2">CATER4U</h1>
           </div>
 
