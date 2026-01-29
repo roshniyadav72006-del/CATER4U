@@ -1,9 +1,9 @@
-import { verifyUser } from "@/lib/middleware/auth";
+import { authUser } from "@/lib/middleware/auth";
 import Booking from "@/models/Booking";
 
 export async function POST(req) {
   // 🔐 USER AUTH CHECK
-  const auth = verifyUser(req);
+  const auth = authUser(req);
   if (auth.error) {
     return Response.json(
       { message: auth.error },
