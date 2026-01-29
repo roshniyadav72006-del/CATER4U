@@ -5,6 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { usePathname } from "next/navigation";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,12 +24,24 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        
+
+        {/* Navbar */}
         {!hideNavbar && <Navbar />}
 
+        {/* Page Content */}
         {children}
 
+        {/* Footer */}
         {!hideNavbar && <Footer />}
+
+        {/* 🔔 TOAST PROVIDER (ONLY ONCE) */}
+        <Toaster
+          position="top-right"
+          richColors
+          expand
+          closeButton
+        />
+
       </body>
     </html>
   );

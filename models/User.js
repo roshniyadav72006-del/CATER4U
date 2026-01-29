@@ -5,9 +5,10 @@ const userSchema = new Schema(
     username: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
+      // ❌ unique hata diya (tum pehle hi drop kar chuki ho)
     },
+
     email: {
       type: String,
       required: true,
@@ -15,34 +16,42 @@ const userSchema = new Schema(
       trim: true,
       lowercase: true,
     },
+
     password: {
       type: String,
       required: true,
     },
+
+    // 🔐 EMAIL VERIFICATION (OTP BASED)
     isVerified: {
       type: Boolean,
       default: false,
     },
-    verifyToken: {
+
+    otp: {
       type: String,
     },
 
-    // ⭐ Added Fields for Reset Password
+    otpExpiry: {
+      type: Date,
+    },
+
+    // ⭐ Reset Password Fields (unchanged)
     resetToken: {
       type: String,
     },
+
     resetTokenExpire: {
       type: Date,
     },
 
-    // New Field 1: Phone Number
+    // 📞 Phone
     phone: {
-      type: String, // Use String for phone numbers to handle formatting like +1-555-xxx-xxxx
+      type: String,
       required: true,
-      unique: false,
     },
 
-    // New Field 2: Address
+    // 🏠 Address
     address: {
       type: String,
       required: true,
@@ -51,6 +60,7 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
+const User =
+  mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;

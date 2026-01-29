@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [form, setForm] = useState({
@@ -11,7 +12,7 @@ export default function LoginPage() {
     password: "",
   });
 
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,33 +20,53 @@ export default function LoginPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
 
     if (!form.email || !form.password) {
-      setError("All fields are required!");
+      toast.error("All fields are required");
       return;
     }
 
     try {
+      setLoading(true);
+
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          identifier: form.email,
+          email: form.email,     // 🔥 FIXED (identifier → email)
           password: form.password,
         }),
       });
 
       const data = await res.json();
 
+      // 🔴 LOGIN FAILED
       if (!res.ok) {
-        setError(data.message || "Invalid credentials");
+        // OTP not verified case
+        if (res.status === 403) {
+          toast.error("Please verify your email using OTP");
+
+          setTimeout(() => {
+            window.location.href = "/verify-otp";
+          }, 1500);
+          return;
+        }
+
+        toast.error(data.error || "Invalid credentials");
         return;
       }
 
-      window.location.href = "/";
+      // 🟢 LOGIN SUCCESS
+      toast.success("Login successful 🎉");
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1200);
+
     } catch (err) {
-      setError("Server error");
+      toast.error("Server error. Try again later.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -69,7 +90,7 @@ export default function LoginPage() {
         {/* RIGHT SIDE */}
         <div className="w-[55%] p-8 flex flex-col justify-center relative">
 
-          {/* BACK TO HOME */}
+          {/* BACK */}
           <Link
             href="/"
             className="absolute top-6 left-6 text-sm font-semibold text-purple-700 hover:underline"
@@ -77,7 +98,7 @@ export default function LoginPage() {
             ← Back to Home
           </Link>
 
-          {/* LOGO + TITLE */}
+          {/* LOGO */}
           <div className="flex flex-col items-center mb-4">
             <Image
               src="/logo1.svg"
@@ -86,7 +107,7 @@ export default function LoginPage() {
               height={240}
               className="mb-1"
             />
-            <h1 className="text-4xl font-bold leading-tight">CATER4U</h1>
+            <h1 className="text-4xl font-bold">CATER4U</h1>
           </div>
 
           <h2 className="text-2xl font-bold text-center mb-6">LOGIN</h2>
@@ -119,7 +140,7 @@ export default function LoginPage() {
             </div>
 
             {/* Forgot */}
-            <div className="text-center mb-3">
+            <div className="text-center mb-4">
               <Link
                 href="/forgot"
                 className="text-purple-700 font-semibold hover:underline"
@@ -128,19 +149,13 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            {/* Error */}
-            {error && (
-              <p className="text-red-600 text-center mb-4 font-semibold">
-                {error}
-              </p>
-            )}
-
             {/* Button */}
             <button
               type="submit"
-              className="w-full bg-purple-700 text-white py-3 rounded-xl font-bold hover:bg-purple-600 transition"
+              disabled={loading}
+              className="w-full bg-purple-700 text-white py-3 rounded-xl font-bold hover:bg-purple-600 transition disabled:opacity-60"
             >
-              LOGIN
+              {loading ? "Logging in..." : "LOGIN"}
             </button>
           </form>
         </div>

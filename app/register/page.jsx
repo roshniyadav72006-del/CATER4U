@@ -2,7 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { toast } from "sonner";
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -12,56 +14,80 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
-  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [emailError, setEmailError] = useState("");
+  const [checkingEmail, setCheckingEmail] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Email regex (proper domain validation)
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z-]+\.[a-zA-Z]{2,}$/;
+  const phoneRegex = /^[6-9]\d{9}$/;
 
+  // 🔍 LIVE EMAIL CHECK
+  const checkEmailExists = async (email) => {
+    if (!emailRegex.test(email)) return;
+
+    setCheckingEmail(true);
+    setEmailError("");
+
+    try {
+      const res = await fetch("/api/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (data.exists) {
+        setEmailError("Email already exists");
+        toast.error("Email already exists. Please login.");
+      }
+    } catch {
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
+
+  // 🔥 REGISTER SUBMIT (OTP FLOW – SAME LOGIC)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
 
-    // 1️⃣ Empty field check
     if (!username || !email || !password || !confirmPassword || !phone || !address) {
-      setError("All fields are required.");
-      setLoading(false);
+      toast.error("All fields are required");
       return;
     }
 
-    // 2️⃣ Email validation
     if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address (example: name@gmail.com)");
-      setLoading(false);
+      toast.error("Invalid email address");
       return;
     }
 
-    // 3️⃣ Password match check
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      setLoading(false);
+    if (emailError) {
+      toast.error(emailError);
       return;
     }
 
-    // 4️⃣ Password length check
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      setLoading(false);
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
-    // 5️⃣ Indian phone number validation
-    const phoneRegex = /^[6-9]\d{9}$/;
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
     if (!phoneRegex.test(phone)) {
-      setError("Phone number is invalid.");
-      setLoading(false);
+      toast.error("Invalid phone number");
       return;
     }
 
-    // 6️⃣ API call
     try {
-      const response = await fetch("/api/register", {
+      setLoading(true);
+
+      const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -73,139 +99,177 @@ export default function RegisterPage() {
         }),
       });
 
-      if (response.ok) {
-        window.location.href = "/login";
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("verifyEmail", email.toLowerCase());
+
+        toast.success("OTP sent to your email 📧", {
+          description: "Enter OTP to verify your email",
+        });
+
+        setTimeout(() => {
+          window.location.href = "/email-verify";
+        }, 1500);
       } else {
-        const data = await response.json();
-        setError(data.message || "Registration failed.");
+        toast.error(data.error || "Registration failed");
       }
-    } catch (err) {
-      setError("Unexpected error. Try again later.");
+    } catch {
+      toast.error("Server error");
     } finally {
       setLoading(false);
     }
   };
 
+  const isDisabled =
+    !username ||
+    !email ||
+    !password ||
+    !confirmPassword ||
+    !phone ||
+    !address ||
+    !!emailError ||
+    loading;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-0 text-text-primary">
+    <div className="min-h-screen flex items-center justify-center bg-bg-0">
       <div className="flex w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden">
 
-        {/* LEFT — FORM */}
-        <div className="flex-1 p-10 flex flex-col justify-center relative">
-
-          {/* BACK TO HOME */}
-          <Link
-            href="/"
-            className="absolute top-6 left-6 text-sm font-semibold text-accent hover:underline"
-          >
+        {/* LEFT FORM */}
+        <div className="flex-1 p-10 relative">
+          <Link href="/" className="absolute top-6 left-6 text-sm font-semibold text-accent">
             ← Back to Home
           </Link>
 
           {/* LOGO */}
-          <div className="flex flex-row items-center justify-center mb-6">
-            <img src="/logo1.svg" alt="logo" className="h-14 w-auto" />
-            <h1 className="text-4xl font-bold ml-2">CATER4U</h1>
+          <div className="flex justify-center mb-2">
+            <img src="/logo1.svg" alt="CATER4U Logo" className="h-16" />
           </div>
 
-          <h2 className="text-3xl font text-center mb-10">REGISTER</h2>
+          <h1 className="text-4xl font-bold text-center mb-2">CATER4U</h1>
+          <h2 className="text-3xl text-center mb-8">REGISTER</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Username */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-bg-2 rounded-lg bg-bg-1 focus:ring-2 focus:ring-accent outline-none"
-              />
-              <span className="absolute left-3 top-3 text-text-muted text-xl">👤</span>
-            </div>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full py-3 px-4 border rounded-lg"
+            />
 
-            {/* Email */}
-            <div className="relative">
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-bg-2 rounded-lg bg-bg-1 focus:ring-2 focus:ring-accent outline-none"
-              />
-              <span className="absolute left-3 top-3 text-text-muted text-xl">✉</span>
-            </div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setEmailError("");
+              }}
+              onBlur={() => checkEmailExists(email)}
+              className="w-full py-3 px-4 border rounded-lg"
+            />
 
-            {/* Password */}
+            {checkingEmail && (
+              <p className="text-xs text-gray-500">Checking email…</p>
+            )}
+
+            {/* PASSWORD */}
             <div className="relative">
               <input
-                type="password"
+                key={showPassword ? "text" : "password"}
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-bg-2 rounded-lg bg-bg-1 focus:ring-2 focus:ring-accent outline-none"
+                className="w-full py-3 px-4 pr-14 border rounded-lg"
               />
-              <span className="absolute left-3 top-3 text-text-muted text-xl">🔒</span>
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2"
+              >
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={showPassword ? "eye-off" : "eye"}
+                    initial={{ opacity: 0, rotate: -90 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    exit={{ opacity: 0, rotate: 90 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="text-xl text-gray-600 hover:text-purple-700"
+                  >
+                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                  </motion.span>
+                </AnimatePresence>
+              </button>
             </div>
 
-            {/* Confirm Password */}
+            {/* CONFIRM PASSWORD */}
             <div className="relative">
               <input
-                type="password"
+                key={showConfirmPassword ? "text2" : "password2"}
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-bg-2 rounded-lg bg-bg-1 focus:ring-2 focus:ring-accent outline-none"
+                className="w-full py-3 px-4 pr-14 border rounded-lg"
               />
-              <span className="absolute left-3 top-3 text-text-muted text-xl">✔</span>
+
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2"
+              >
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={showConfirmPassword ? "eye-off2" : "eye2"}
+                    initial={{ opacity: 0, rotate: -90 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    exit={{ opacity: 0, rotate: 90 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="text-xl text-gray-600 hover:text-purple-700"
+                  >
+                    {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+                  </motion.span>
+                </AnimatePresence>
+              </button>
             </div>
 
-            {/* Phone */}
-            <div className="relative">
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-bg-2 rounded-lg bg-bg-1 focus:ring-2 focus:ring-accent outline-none"
-              />
-              <span className="absolute left-3 top-3 text-text-muted text-xl">📞</span>
-            </div>
+            <input
+              type="tel"
+              placeholder="Phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full py-3 px-4 border rounded-lg"
+            />
 
-            {/* Address */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-bg-2 rounded-lg bg-bg-1 focus:ring-2 focus:ring-accent outline-none"
-              />
-              <span className="absolute left-3 top-3 text-text-muted text-xl">🏠</span>
-            </div>
-
-            {/* Error */}
-            {error && (
-              <p className="text-red-600 text-sm text-center">{error}</p>
-            )}
+            <input
+              type="text"
+              placeholder="Address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="w-full py-3 px-4 border rounded-lg"
+            />
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-accent text-white py-3 rounded-lg font-bold uppercase tracking-wide hover:bg-opacity-90 disabled:bg-bg-2 disabled:text-text-muted disabled:cursor-not-allowed transition"
+              disabled={isDisabled}
+              className="w-full bg-accent text-white py-3 rounded-lg font-bold disabled:bg-gray-300"
             >
-              {loading ? "REGISTERING..." : "REGISTER"}
+              {loading ? "Registering ⏳" : "Register"}
             </button>
           </form>
         </div>
 
-        {/* RIGHT — LOGIN CTA */}
-        <div className="flex flex-1 flex-col items-center justify-center bg-accent text-white p-10">
+        {/* RIGHT SIDE */}
+        <div className="flex-1 bg-accent text-white flex flex-col items-center justify-center">
           <h1 className="text-4xl font-bold mb-4">Welcome Back!</h1>
-          <p className="text-lg mb-6">Already have an account?</p>
-
+          <p className="mb-6">Already have an account?</p>
           <Link
             href="/login"
-            className="px-6 py-2 bg-white text-accent rounded-full font-bold text-lg hover:bg-bg-1 transition"
+            className="bg-white text-accent px-6 py-2 rounded-full font-bold"
           >
             LOGIN
           </Link>

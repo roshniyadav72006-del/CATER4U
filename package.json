@@ -12,6 +12,7 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
+    "framer-motion": "^12.26.2",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.560.0",
     "mongoose": "^8.20.0",
@@ -19,7 +20,8 @@
     "nodemailer": "^7.0.11",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

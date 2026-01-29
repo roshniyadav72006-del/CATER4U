@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectDB from "@/lib/mongoose";
 import User from "@/models/User";
-import jwt from "jsonwebtoken"; // ✅ STEP 1: JWT import
+import jwt from "jsonwebtoken";
 
 export async function POST(req) {
   try {
@@ -17,7 +17,7 @@ export async function POST(req) {
       );
     }
 
-    // ✅ User can login using EMAIL or USERNAME
+    // 🔍 email OR username se login
     const user = await User.findOne({
       $or: [{ email: identifier }, { username: identifier }],
     });
@@ -37,25 +37,30 @@ export async function POST(req) {
       );
     }
 
-    // 🔐 STEP 1.3 START — JWT TOKEN CREATE
+    // 🔐 JWT TOKEN
     const token = jwt.sign(
       {
-        userId: user._id,   // user ki id
-        role: user.role    // user ya admin
+        userId: user._id,
+        role: user.role,
       },
-      process.env.JWT_SECRET, // secret key (.env)
-      {
-        expiresIn: "1d" // token valid for 1 day
-      }
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
     );
-    // 🔐 STEP 1.3 END
 
-    // ✅ SUCCESS RESPONSE (token ke sath)
+    // ✅ FINAL SUCCESS RESPONSE (ALL REQUIREMENTS COVERED)
     return NextResponse.json(
       {
         message: "Login Successful",
-        token,              // frontend / thunder client ko milega
-        role: user.role     // admin ya user
+        token,                 // navbar + auth
+        role: user.role,       // admin / user
+
+        // 👇 PROFILE PAGE KE LIYE
+        user: {
+          id: user._id,
+          name: user.name,
+          username: user.username,
+          email: user.email,
+        },
       },
       { status: 200 }
     );
