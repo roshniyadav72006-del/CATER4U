@@ -1,40 +1,76 @@
+"use client";
+
+import Image from "next/image";
+import { useState, useEffect } from "react";
+
+const images = [
+  "/about1.jpeg",
+  "/about2.jpeg",
+  "/about3.jpg",
+  "/about4.jpg",
+];
+
 export default function AboutUs() {
+  const [current, setCurrent] = useState(0);
+
+  // Auto slide
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % images.length);
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <section className="py-20 bg-white px-6">
       <div className="max-w-5xl mx-auto text-center">
-
-        {/* TEST LINE – agar ye dikhe, routing 100% sahi */}
-        <h1 className="text-red-500 text-3xl mb-4">
-          ABOUT PAGE TEST
-        </h1>
-
-        <p className="text-yellow-500 tracking-widest mb-3">
-          ABOUT US
-        </p>
 
         <h2 className="text-4xl font-bold mb-6 text-gray-900">
           Who We Are
         </h2>
 
-        <p className="text-gray-600 leading-relaxed mb-6">
-          At <span className="font-semibold">CATER4U</span>, we believe that great
-          food is the heart of every successful celebration. With years of
-          experience in the catering industry, we specialize in delivering
-          exceptional culinary experiences tailored to your special moments.
+        <p className="text-gray-600 leading-relaxed mb-10">
+          At <span className="font-semibold">CATER4U</span>, we deliver
+          exceptional catering experiences for every occasion.
         </p>
 
-        <p className="text-gray-600 leading-relaxed mb-6">
-          From weddings and family gatherings to corporate events and festive
-          occasions, our team is dedicated to providing delicious food,
-          professional service, and a memorable dining experience for you and
-          your guests.
-        </p>
+        {/* 🔁 IMAGE SLIDER */}
+        <div className="relative w-full h-[300px] overflow-hidden rounded-2xl shadow-lg">
 
-        <p className="text-gray-600 leading-relaxed">
-          Using the finest ingredients and authentic recipes, we take pride in
-          offering hygienic, flavorful, and beautifully presented meals that
-          leave a lasting impression.
-        </p>
+          {images.map((img, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-700 ${
+                index === current ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <Image
+                src={img}
+                alt="Catering Service"
+                fill
+                className="object-cover"
+              />
+            </div>
+          ))}
+
+          {/* ⬅️ ➡️ Buttons */}
+          <button
+            onClick={() =>
+              setCurrent((current - 1 + images.length) % images.length)
+            }
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white px-3 py-1 rounded-full"
+          >
+            ‹
+          </button>
+
+          <button
+            onClick={() => setCurrent((current + 1) % images.length)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white px-3 py-1 rounded-full"
+          >
+            ›
+          </button>
+        </div>
 
       </div>
     </section>

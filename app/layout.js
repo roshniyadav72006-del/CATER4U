@@ -23,25 +23,22 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+      >
         {/* Navbar */}
         {!hideNavbar && <Navbar />}
 
         {/* Page Content */}
-        {children}
+        <main className="flex-grow">
+          {children}
+        </main>
 
         {/* Footer */}
         {!hideNavbar && <Footer />}
 
-        {/* 🔔 TOAST PROVIDER (ONLY ONCE) */}
-        <Toaster
-          position="top-right"
-          richColors
-          expand
-          closeButton
-        />
-
+        {/* Toast */}
+        <Toaster position="top-right" richColors expand closeButton />
       </body>
     </html>
   );
