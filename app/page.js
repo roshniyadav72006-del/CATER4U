@@ -1,5 +1,6 @@
 import Image from "next/image";
-import Chatbot from "../components/ui/chatbot";
+import Link from "next/link";
+
 export default function Home() {
  
   return (
@@ -29,9 +30,12 @@ export default function Home() {
           </p>
 
           <div className="flex gap-4">
-            <button className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold">
-              View Menu
-            </button>
+            <Link href="/menu">
+              <button className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold">
+                 View Menu
+              </button>
+           </Link>
+
             <button className="border border-white px-6 py-3 rounded-lg">
               Contact Us
             </button>

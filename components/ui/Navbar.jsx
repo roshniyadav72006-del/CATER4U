@@ -13,20 +13,22 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  // scroll effect
+  const isHome = pathname === "/";
+
+  // scroll effect (UNCHANGED)
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // check login
+  // check login (UNCHANGED)
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
   }, []);
 
-  // close menus on route change
+  // close menus on route change (UNCHANGED)
   useEffect(() => {
     setOpen(false);
     setMobileOpen(false);
@@ -38,15 +40,26 @@ export default function Navbar() {
     router.push("/login");
   };
 
+  // ⭐ ONLY COLOR LOGIC (minimal change)
+  const textColor = scrolled
+    ? "text-white"
+    : isHome
+    ? "text-white"
+    : "text-black";
+
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300
-      ${scrolled ? "bg-black/80 backdrop-blur-md border-b border-white/10" : "bg-transparent"}
-    `}
+        ${
+          scrolled
+            ? "bg-black/80 backdrop-blur-md border-b border-white/10"
+            : "bg-transparent"
+        }
+      `}
     >
       <div
         className={`max-w-7xl mx-auto px-6 flex items-center justify-between
-        ${scrolled ? "py-3" : "py-6"} transition-all`}
+          ${scrolled ? "py-3" : "py-6"} transition-all`}
       >
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-4">
@@ -55,37 +68,55 @@ export default function Navbar() {
             alt="Cater4U Logo"
             className={`transition-all ${scrolled ? "h-12" : "h-20"}`}
           />
-          <span className={`font-bold text-white ${scrolled ? "text-lg" : "text-2xl"}`}>
+          <span
+            className={`font-bold ${textColor} ${
+              scrolled ? "text-lg" : "text-2xl"
+            }`}
+          >
             CATER4U
           </span>
         </Link>
 
         {/* DESKTOP MENU */}
-        <ul className="hidden md:flex gap-12 text-white text-lg font-medium">
+        <ul
+          className={`hidden md:flex gap-12 ${textColor} text-lg font-medium`}
+        >
           <li><Link href="/">Home</Link></li>
           <li><Link href="/about">About</Link></li>
           <li><Link href="/contact">Contact</Link></li>
 
           {/* PROFILE */}
           <li className="relative">
-            <button onClick={() => setOpen(!open)} className="hover:text-yellow-400">
+            <button
+              onClick={() => setOpen(!open)}
+              className="hover:text-yellow-400"
+            >
               Profile
             </button>
 
             {open && (
-              <div className="absolute right-0 mt-2 bg-black/90 border border-white/20 rounded-md w-40">
+              <div className="absolute right-0 mt-2 bg-black/90 border border-white/20 rounded-md w-40 text-white">
                 {!isLoggedIn ? (
                   <>
-                    <Link href="/login" className="block px-4 py-2 hover:bg-white/10">
+                    <Link
+                      href="/login"
+                      className="block px-4 py-2 hover:bg-white/10"
+                    >
                       Login
                     </Link>
-                    <Link href="/register" className="block px-4 py-2 hover:bg-white/10">
+                    <Link
+                      href="/register"
+                      className="block px-4 py-2 hover:bg-white/10"
+                    >
                       Register
                     </Link>
                   </>
                 ) : (
                   <>
-                    <Link href="/profile" className="block px-4 py-2 hover:bg-white/10">
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 hover:bg-white/10"
+                    >
                       My Profile
                     </Link>
                     <button
@@ -103,7 +134,7 @@ export default function Navbar() {
 
         {/* MOBILE BUTTON */}
         <button
-          className="md:hidden text-white text-2xl"
+          className={`md:hidden ${textColor} text-2xl`}
           onClick={() => setMobileOpen(!mobileOpen)}
         >
           ☰

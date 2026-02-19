@@ -264,7 +264,8 @@ export default function RegisterPage() {
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="flex-1 bg-accent text-white flex flex-col items-center justify-center">
+        <div className="w-[45%] bg-gradient-to-b from-purple-700 to-purple-500 text-white flex flex-col items-center justify-center gap-4 p-10">
+
           <h1 className="text-4xl font-bold mb-4">Welcome Back!</h1>
           <p className="mb-6">Already have an account?</p>
           <Link

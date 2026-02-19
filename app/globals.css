@@ -6,8 +6,9 @@
   --bg2: oklch(98.5% 0 0);
   --text-primary: oklch(14.5% 0 0);
   --text-muted: oklch(43.9% 0 0);
-  --accent: oklch(76.123% 0.11849 211.993);
-  --footercolor: oklch(#1c1c84)
+  --accent: oklch(35.432% 0.05549 213.346);
+--footercolor: oklch(32% 0.17 265);
+
 }
 
 @media (prefers-color-scheme: dark) {

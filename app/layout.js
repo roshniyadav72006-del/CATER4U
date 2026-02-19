@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/ui/Navbar";
 import Footer from "../components/ui/Footer";
+import AIChatbot from "../components/ui/AIChatbot";
 import { usePathname } from "next/navigation";
 import { Toaster } from "sonner";
 
@@ -19,7 +20,9 @@ const geistMono = Geist_Mono({
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
-  const hideNavbar = pathname === "/login" || pathname === "/register";
+
+  const hideLayout =
+    pathname === "/login" || pathname === "/register";
 
   return (
     <html lang="en">
@@ -27,7 +30,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         {/* Navbar */}
-        {!hideNavbar && <Navbar />}
+        {!hideLayout && <Navbar />}
 
         {/* Page Content */}
         <main className="flex-grow">
@@ -35,7 +38,10 @@ export default function RootLayout({ children }) {
         </main>
 
         {/* Footer */}
-        {!hideNavbar && <Footer />}
+        {!hideLayout && <Footer />}
+
+        {/* AI Chatbot */}
+        {!hideLayout && <AIChatbot />}
 
         {/* Toast */}
         <Toaster position="top-right" richColors expand closeButton />
