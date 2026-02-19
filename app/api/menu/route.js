@@ -1,27 +1,24 @@
 import { NextResponse } from "next/server";
-import { verifyAdmin } from "@/lib/middleware/adminApi";
-import Menu from "@/models/Menu";
-import connectDB from "@/lib/mongoose";
+import { verifyAdmin } from "../../../lib/middleware/adminApi";
+import Menu from "../../../models/Menu";
+import connectDB from "../../../lib/mongoose";
 
-// 🔹 GET: Fetch all menu items (everyone can view)
+// 🔹 PUBLIC GET
 export async function GET() {
   try {
     await connectDB();
-    const menus = await Menu.find().sort({ createdAt: -1 });
+    const menus = await Menu.find({ isAvailable: true }).sort({ createdAt: -1 });
     return NextResponse.json(menus);
   } catch (err) {
-    console.error("GET /api/menu error:", err);
-    return NextResponse.json(
-      { message: "Failed to fetch menu" },
-      { status: 500 }
-    );
+    console.error("GET error:", err);
+    return NextResponse.json({ message: err.message }, { status: 500 });
   }
 }
 
-// 🔹 POST: Create menu item (Admin only)
+// 🔹 ADMIN ONLY POST
 export async function POST(req) {
   try {
-    await verifyAdmin(req); // Admin check
+    await verifyAdmin(req);
     await connectDB();
 
     const body = await req.json();
@@ -29,51 +26,36 @@ export async function POST(req) {
 
     return NextResponse.json(item, { status: 201 });
   } catch (err) {
-    console.error("POST /api/menu error:", err);
-    return NextResponse.json(
-      { message: err.message || "Unauthorized" },
-      { status: err.message ? 400 : 403 }
-    );
+    return NextResponse.json({ message: err.message }, { status: 403 });
   }
 }
 
-// 🔹 PUT: Update menu item (Admin only)
+// 🔹 ADMIN ONLY PUT
 export async function PUT(req) {
   try {
     await verifyAdmin(req);
     await connectDB();
 
     const body = await req.json();
-    if (!body.id) throw new Error("Menu ID is required");
-
     const updated = await Menu.findByIdAndUpdate(body.id, body, { new: true });
+
     return NextResponse.json(updated);
   } catch (err) {
-    console.error("PUT /api/menu error:", err);
-    return NextResponse.json(
-      { message: err.message || "Failed to update menu" },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: err.message }, { status: 400 });
   }
 }
 
-// 🔹 DELETE: Delete menu item (Admin only)
+// 🔹 ADMIN ONLY DELETE
 export async function DELETE(req) {
   try {
     await verifyAdmin(req);
     await connectDB();
 
     const body = await req.json();
-    if (!body.id) throw new Error("Menu ID is required");
-
     await Menu.findByIdAndDelete(body.id);
-    return NextResponse.json({ message: "Menu deleted successfully" });
+
+    return NextResponse.json({ message: "Deleted successfully" });
   } catch (err) {
-    console.error("DELETE /api/menu error:", err);
-    return NextResponse.json(
-      { message: err.message || "Failed to delete menu" },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: err.message }, { status: 400 });
   }
 }
-
