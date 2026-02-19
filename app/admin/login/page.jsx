@@ -4,14 +4,18 @@ import { useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
+  const router = useRouter();
+
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,11 +31,13 @@ export default function AdminLoginPage() {
     }
 
     try {
+      setLoading(true);
+
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          identifier: form.email,
+          email: form.email,       // ✅ FIXED
           password: form.password,
         }),
       });
@@ -40,12 +46,17 @@ export default function AdminLoginPage() {
 
       if (!res.ok) {
         setError(data.message || "Invalid credentials");
+        setLoading(false);
         return;
       }
 
-      window.location.href = "/admin_dashboard";
+      // ✅ SUCCESS → ADMIN DASHBOARD
+      router.push("/admin/admin_dashboard");
+
     } catch (err) {
       setError("Server error");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -56,14 +67,7 @@ export default function AdminLoginPage() {
         {/* LEFT SIDE */}
         <div className="w-[45%] bg-gradient-to-b from-purple-700 to-purple-500 text-white flex flex-col items-center justify-center gap-4 p-10">
           <h1 className="text-4xl font-bold">Welcome Back</h1>
-          <p className="opacity-90">Don't have an account?</p>
-
-          <Link
-            href="/register"
-            className="bg-white text-purple-700 px-6 py-2 rounded-xl font-bold hover:underline"
-          >
-            Register
-          </Link>
+          <p className="opacity-90">Admin access only</p>
         </div>
 
         {/* RIGHT SIDE */}
@@ -77,7 +81,7 @@ export default function AdminLoginPage() {
             ← Back to Home
           </Link>
 
-          {/* LOGO + TITLE */}
+          {/* LOGO */}
           <div className="flex flex-col items-center mb-4">
             <Image
               src="/logo1.svg"
@@ -89,7 +93,9 @@ export default function AdminLoginPage() {
             <h1 className="text-4xl font-bold leading-tight">CATER4U</h1>
           </div>
 
-          <h2 className="text-2xl font-bold text-center mb-6">LOGIN</h2>
+          <h2 className="text-2xl font-bold text-center mb-6">
+            ADMIN LOGIN
+          </h2>
 
           <form onSubmit={handleSubmit}>
             {/* Email */}
@@ -98,7 +104,7 @@ export default function AdminLoginPage() {
               <input
                 type="email"
                 name="email"
-                placeholder="Email Address"
+                placeholder="Admin Email"
                 className="bg-transparent outline-none w-full"
                 value={form.email}
                 onChange={handleChange}
@@ -118,16 +124,6 @@ export default function AdminLoginPage() {
               />
             </div>
 
-            {/* Forgot */}
-            <div className="text-center mb-3">
-              <Link
-                href="/forgot"
-                className="text-purple-700 font-semibold hover:underline"
-              >
-                Forget Password?
-              </Link>
-            </div>
-
             {/* Error */}
             {error && (
               <p className="text-red-600 text-center mb-4 font-semibold">
@@ -138,9 +134,10 @@ export default function AdminLoginPage() {
             {/* Button */}
             <button
               type="submit"
-              className="w-full bg-purple-700 text-white py-3 rounded-xl font-bold hover:bg-purple-600 transition"
+              disabled={loading}
+              className="w-full bg-purple-700 text-white py-3 rounded-xl font-bold hover:bg-purple-600 transition disabled:opacity-60"
             >
-              LOGIN
+              {loading ? "Logging in..." : "LOGIN"}
             </button>
           </form>
         </div>

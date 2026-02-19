@@ -15,16 +15,20 @@ export async function POST(req) {
   }
 
   const token = jwt.sign(
-    { role: "admin", email },
+    {
+      role: "admin",
+      email,
+      admin: true,
+    },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
 
   const response = NextResponse.json({
     message: "Admin login success",
+    role: "admin",
   });
 
-  // ✅ COOKIE SET
   response.cookies.set("adminToken", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
