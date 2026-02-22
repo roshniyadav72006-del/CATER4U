@@ -33,7 +33,7 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: form.email,     // 🔥 FIXED (identifier → email)
+          email: form.email,
           password: form.password,
         }),
       });
@@ -42,7 +42,6 @@ export default function LoginPage() {
 
       // 🔴 LOGIN FAILED
       if (!res.ok) {
-        // OTP not verified case
         if (res.status === 403) {
           toast.error("Please verify your email using OTP");
 
@@ -59,8 +58,13 @@ export default function LoginPage() {
       // 🟢 LOGIN SUCCESS
       toast.success("Login successful 🎉");
 
+      // ✅ Store token and userId
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userId", data.user.id);
+
+      // Redirect to profile page
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = "/profile";
       }, 1200);
 
     } catch (err) {
@@ -90,7 +94,6 @@ export default function LoginPage() {
         {/* RIGHT SIDE */}
         <div className="w-[55%] p-8 flex flex-col justify-center relative">
 
-          {/* BACK */}
           <Link
             href="/"
             className="absolute top-6 left-6 text-sm font-semibold text-purple-700 hover:underline"
@@ -98,7 +101,6 @@ export default function LoginPage() {
             ← Back to Home
           </Link>
 
-          {/* LOGO */}
           <div className="flex flex-col items-center mb-4">
             <Image
               src="/logo1.svg"
@@ -139,7 +141,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Forgot */}
             <div className="text-center mb-4">
               <Link
                 href="/forgot"
@@ -149,7 +150,6 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            {/* Button */}
             <button
               type="submit"
               disabled={loading}

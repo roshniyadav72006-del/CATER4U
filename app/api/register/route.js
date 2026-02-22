@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongoose";
-import User from "@/models/User";
-import { sendEmail } from "@/lib/nodemailer";
+import connectDB from "../../../lib/mongoose";
+import User from "../../../models/User";
+import { sendEmail } from "../../../lib/nodemailer";
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {

@@ -1,6 +1,6 @@
 import Booking from "@/models/Booking";
 import { verifyAdmin } from "@/lib/middleware/AdminSession";
-import connectDB from "@/lib/mongoose";
+import connectDB from "../../../lib/mongoose";
 import { NextResponse } from "next/server";
 
 async function getBookings() {

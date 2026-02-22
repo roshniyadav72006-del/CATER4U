@@ -8,36 +8,47 @@ export async function POST(req) {
   try {
     await connectDB();
 
-    const { identifier, password } = await req.json();
+    const { email, password } = await req.json();
 
-    if (!identifier || !password) {
+    // 🔴 Basic validation
+    if (!email || !password) {
       return NextResponse.json(
-        { message: "All fields are required" },
+        { error: "All fields are required" },
         { status: 400 }
       );
     }
 
-    // 🔍 email OR username se login
+    // 🔍 Find user by email OR username
     const user = await User.findOne({
-      $or: [{ email: identifier }, { username: identifier }],
+      $or: [{ email }, { username: email }],
     });
 
     if (!user) {
       return NextResponse.json(
-        { message: "User not found" },
+        { error: "User not found" },
         { status: 404 }
       );
     }
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
+    // 🔐 Check if email verified
+    if (!user.isVerified) {
       return NextResponse.json(
-        { message: "Invalid Password" },
+        { error: "Please verify your email first" },
+        { status: 403 }
+      );
+    }
+
+    // 🔐 Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    // 🔐 JWT TOKEN
+    // 🔑 Generate JWT Token
     const token = jwt.sign(
       {
         userId: user._id,
@@ -47,17 +58,14 @@ export async function POST(req) {
       { expiresIn: "1d" }
     );
 
-    // ✅ FINAL SUCCESS RESPONSE (ALL REQUIREMENTS COVERED)
+    // ✅ Success response
     return NextResponse.json(
       {
-        message: "Login Successful",
-        token,                 // navbar + auth
-        role: user.role,       // admin / user
-
-        // 👇 PROFILE PAGE KE LIYE
+        message: "Login successful",
+        token,
+        role: user.role,
         user: {
           id: user._id,
-          name: user.name,
           username: user.username,
           email: user.email,
         },
@@ -66,9 +74,9 @@ export async function POST(req) {
     );
 
   } catch (error) {
-    console.log(error);
+    console.log("LOGIN ERROR:", error);
     return NextResponse.json(
-      { message: "Server Error" },
+      { error: "Server error" },
       { status: 500 }
     );
   }

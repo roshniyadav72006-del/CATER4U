@@ -66,15 +66,9 @@ export default function Navbar() {
           <img
             src="/logo1.svg"
             alt="Cater4U Logo"
-            className={`transition-all ${scrolled ? "h-12" : "h-20"}`}
+            className={`transition-all ${scrolled ? "h-16" : "h-24"}`}
           />
-          <span
-            className={`font-bold ${textColor} ${
-              scrolled ? "text-lg" : "text-2xl"
-            }`}
-          >
-            CATER4U
-          </span>
+         
         </Link>
 
         {/* DESKTOP MENU */}

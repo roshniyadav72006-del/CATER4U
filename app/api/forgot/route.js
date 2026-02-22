@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import User from "@/models/User";
-import connectDB from "@/lib/mongoose";
-import { sendEmail } from "@/lib/nodemailer";
-
+import User from "../../../models/User";
+import connectDB from "../../../lib/mongoose";
+import { sendEmail } from "../../../lib/nodemailer";
 export async function POST(req) {
   try {
     await connectDB();
