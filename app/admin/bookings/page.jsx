@@ -1,5 +1,5 @@
-import Booking from "@/models/Booking";
-import { verifyAdmin } from "@/lib/middleware/AdminSession";
+import Booking from "../../../models/Booking";
+import { verifyAdmin } from "../../../lib/middleware/AdminSession";
 import connectDB from "../../../lib/mongoose";
 import { NextResponse } from "next/server";
 

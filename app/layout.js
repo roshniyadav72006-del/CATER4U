@@ -22,30 +22,27 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
 
   const hideLayout =
-    pathname === "/login" || pathname === "/register";
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname.startsWith("/admin") ||       // 👈 admin pages hide
+    pathname.startsWith("/admin_login");   // 👈 admin login hide
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        {/* Navbar */}
         {!hideLayout && <Navbar />}
 
-        {/* Page Content */}
         <main className="flex-grow">
           {children}
         </main>
 
-        {/* Footer */}
         {!hideLayout && <Footer />}
-
-        {/* AI Chatbot */}
         {!hideLayout && <AIChatbot />}
 
-        {/* Toast */}
         <Toaster position="top-right" richColors expand closeButton />
       </body>
     </html>
   );
-}
+}   

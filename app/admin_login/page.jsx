@@ -37,8 +37,8 @@ export default function AdminLoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: form.email,       // ✅ FIXED
-          password: form.password,
+          email: form.email.trim(),
+          password: form.password.trim(),
         }),
       });
 
@@ -46,12 +46,11 @@ export default function AdminLoginPage() {
 
       if (!res.ok) {
         setError(data.message || "Invalid credentials");
-        setLoading(false);
         return;
       }
 
-      // ✅ SUCCESS → ADMIN DASHBOARD
-      router.push("/admin/admin_dashboard");
+      // ✅ CORRECT REDIRECT
+      router.push("/admin/dashboard");
 
     } catch (err) {
       setError("Server error");

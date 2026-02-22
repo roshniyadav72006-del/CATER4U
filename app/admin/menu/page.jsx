@@ -1,4 +1,4 @@
-import { verifyAdmin } from "@/app/lib/middleware/adminAuth";
+import { verifyAdmin } from "../../../lib/middleware/AdminSession";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
