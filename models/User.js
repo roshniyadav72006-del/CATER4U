@@ -6,7 +6,6 @@ const userSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      // ❌ unique hata diya (tum pehle hi drop kar chuki ho)
     },
 
     email: {
@@ -36,7 +35,7 @@ const userSchema = new Schema(
       type: Date,
     },
 
-    // ⭐ Reset Password Fields (unchanged)
+    // ⭐ Reset Password Fields
     resetToken: {
       type: String,
     },
@@ -55,6 +54,12 @@ const userSchema = new Schema(
     address: {
       type: String,
       required: true,
+    },
+
+    // 🖼 Profile Image (NEW FIELD)
+    image: {
+      type: String,      // base64 or image URL
+      default: "",
     },
   },
   { timestamps: true }

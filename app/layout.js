@@ -21,11 +21,15 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   const pathname = usePathname();
 
+  // 🔹 Navbar hide logic (same as before)
   const hideLayout =
     pathname === "/login" ||
     pathname === "/register" ||
-    pathname.startsWith("/admin") ||       // 👈 admin pages hide
-    pathname.startsWith("/admin_login");   // 👈 admin login hide
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/admin_login");
+
+  // 🔹 ONLY footer hide on profile
+  const hideFooter = pathname === "/profile";
 
   return (
     <html lang="en">
@@ -38,11 +42,14 @@ export default function RootLayout({ children }) {
           {children}
         </main>
 
-        {!hideLayout && <Footer />}
+        {/* ❌ Footer hide only on profile */}
+        {!hideFooter && !hideLayout && <Footer />}
+
+        {/* ✅ Chatbot remains same as before */}
         {!hideLayout && <AIChatbot />}
 
         <Toaster position="top-right" richColors expand closeButton />
       </body>
     </html>
   );
-}   
+}

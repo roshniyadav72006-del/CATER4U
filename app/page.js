@@ -1,8 +1,24 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Home() {
- 
+  const router = useRouter();
+
+  const handleBooking = () => {
+    const token = localStorage.getItem("token"); // login ke time jo store kiya ho
+
+    if (!token) {
+      toast.error("Login yourself to book catering service");
+      return;
+    }
+
+    router.push("/booking");
+  };
+
   return (
     <div className="w-full bg-white">
 
@@ -32,13 +48,18 @@ export default function Home() {
           <div className="flex gap-4">
             <Link href="/menu">
               <button className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold">
-                 View Menu
+                View Menu
               </button>
-           </Link>
+            </Link>
 
-            <button className="border border-white px-6 py-3 rounded-lg">
-              Contact Us
+            {/* 🔥 Updated Book Now Button */}
+            <button
+              onClick={handleBooking}
+              className="border border-white px-6 py-3 rounded-lg hover:bg-white hover:text-black transition"
+            >
+              Book Now
             </button>
+
           </div>
         </div>
 
@@ -58,7 +79,6 @@ export default function Home() {
       <section className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 items-center">
 
-          {/* LEFT IMAGE */}
           <div className="hidden md:flex justify-center">
             <div className="relative w-[400px] h-[400px]">
               <Image
@@ -71,7 +91,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* CENTER TEXT */}
           <div className="text-center">
             <p className="text-yellow-500 tracking-widest mb-3">
               INTRODUCTION
@@ -91,7 +110,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* RIGHT IMAGE */}
           <div className="hidden md:flex justify-center">
             <div className="relative w-[400px] h-[400px]">
               <Image
