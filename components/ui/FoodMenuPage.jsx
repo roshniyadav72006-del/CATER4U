@@ -1,7 +1,5 @@
 "use client";
-
 import { useState, useEffect } from "react";
-
 export default function FoodMenuPage() {
   const [menuData, setMenuData] = useState([]);
   const [activeTab, setActiveTab] = useState("Appetizers");

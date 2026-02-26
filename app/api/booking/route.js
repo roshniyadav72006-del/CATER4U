@@ -1,46 +1,96 @@
 import { NextResponse } from "next/server";
 import connectDB from "../../../lib/mongoose";
 import Booking from "../../../models/Booking";
-import { authUser } from "../../../lib/middleware/auth";
+import jwt from "jsonwebtoken";
 
-
-// 🔹 CREATE BOOKING
 export async function POST(req) {
-  await connectDB();
-
-  const auth = await authUser(req);
-
-  if (auth.error) {
-    return NextResponse.json({ message: auth.error }, { status: 401 });
-  }
-
-  const body = await req.json();
-
-  const booking = await Booking.create({
-    ...body,
-    userId: auth.user.id,
-  });
-
-  return NextResponse.json(booking, { status: 201 });
-}
-
-
-// 🔹 GET USER BOOKINGS  ✅ (NEW ADD)
-export async function GET(req) {
   try {
     await connectDB();
 
-    const userId = req.headers.get("userid");
+    const authHeader = req.headers.get("authorization");
 
-    if (!userId) {
-      return NextResponse.json([], { status: 200 });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { message: "Unauthorized - Login required" },
+        { status: 401 }
+      );
     }
 
-    const bookings = await Booking.find({ userId });
+    const token = authHeader.split(" ")[1];
+    console.log("TOKEN RECEIVED:", token);
+    console.log("SECRET:", process.env.JWT_SECRET);   // 👈 YAHAN ADD KARO
 
-    return NextResponse.json(bookings);
+    let decoded;
 
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return NextResponse.json(
+        { message: "Invalid Token" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+
+    const {
+      eventType,
+      eventDate,
+      eventTime,
+      guests,
+      venueType,
+      venueAddress,
+      specialRequests,
+      selectedMenu,
+      totalPrice,
+      fullName,
+      email,
+      phone,
+    } = body;
+
+    // Basic validation
+    if (
+      !eventType ||
+      !eventDate ||
+      !eventTime ||
+      !guests ||
+      !venueType ||
+      !venueAddress ||
+      !fullName ||
+      !email ||
+      !phone
+    ) {
+      return NextResponse.json(
+        { message: "All required fields must be filled" },
+        { status: 400 }
+      );
+    }
+
+    const newBooking = await Booking.create({
+      userId: decoded.userId, // JWT se user id
+      eventType,
+      eventDate,
+      eventTime,
+      guests,
+      venueType,
+      venueAddress,
+      specialRequests,
+      selectedMenu,
+      totalPrice,
+      fullName,
+      email,
+      phone,
+    });
+
+    return NextResponse.json(
+      { message: "Booking saved successfully", booking: newBooking },
+      { status: 201 }
+    );
   } catch (error) {
-    return NextResponse.json([], { status: 500 });
+    console.error(error);
+    return NextResponse.json(
+      { message: "Server Error" },
+      { status: 500 }
+    );
   }
 }
