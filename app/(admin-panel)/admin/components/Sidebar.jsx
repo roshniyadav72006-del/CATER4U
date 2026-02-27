@@ -8,7 +8,7 @@ export default function Sidebar() {
   const menuItems = [
     { name: "Dashboard", path: "/admin/dashboard" },
     { name: "Menu", path: "/admin/menu" },
-    { name: "Categories", path: "/admin/categories" },
+    { name: "Manage Event Categories", path: "/admin/events" },
     { name: "Bookings", path: "/admin/bookings" },
   ];
 

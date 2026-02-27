@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { type } from "os";
+import "./User";
+
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -67,7 +69,7 @@ const bookingSchema = new mongoose.Schema(
     },
     status:{
       type: String,
-      default: pending
+      default: "pending"
     },
   },
   { timestamps: true }

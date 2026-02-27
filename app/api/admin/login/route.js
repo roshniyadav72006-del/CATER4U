@@ -3,24 +3,32 @@ import jwt from "jsonwebtoken";
 
 export async function POST(req) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const email = body.email?.trim();
+    const password = body.password?.trim();
 
-    // ✅ Check env
-    if (
-      !process.env.ADMIN_EMAIL ||
-      !process.env.ADMIN_PASSWORD ||
-      !process.env.JWT_SECRET
-    ) {
+    if (!email || !password) {
+      return NextResponse.json(
+        { message: "Email and password required" },
+        { status: 400 }
+      );
+    }
+
+    // ENV check
+    if (!process.env.ADMIN_EMAIL || 
+        !process.env.ADMIN_PASSWORD || 
+        !process.env.JWT_SECRET) {
+      console.log("❌ ENV VARIABLES MISSING");
       return NextResponse.json(
         { message: "Server configuration error" },
         { status: 500 }
       );
     }
 
-    // ✅ Validate credentials
+    // Credential match
     if (
-      email.trim() !== process.env.ADMIN_EMAIL.trim() ||
-      password.trim() !== process.env.ADMIN_PASSWORD.trim()
+      email !== process.env.ADMIN_EMAIL.trim() ||
+      password !== process.env.ADMIN_PASSWORD.trim()
     ) {
       return NextResponse.json(
         { message: "Invalid admin credentials" },
@@ -28,34 +36,30 @@ export async function POST(req) {
       );
     }
 
-    // ✅ Generate token
+    // Generate JWT
     const token = jwt.sign(
-      {
-        role: "admin",
-        email,
-        admin: true,
-      },
+      { role: "admin", email },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    // ✅ Create response
     const response = NextResponse.json({
       success: true,
       message: "Admin login success",
     });
 
-    // ✅ Set cookie
     response.cookies.set("adminToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false, // keep false in dev
+      sameSite: "lax",
       maxAge: 60 * 60 * 24,
       path: "/",
     });
 
     return response;
+
   } catch (error) {
+    console.error("❌ SERVER ERROR:", error);
     return NextResponse.json(
       { message: "Something went wrong" },
       { status: 500 }
