@@ -32,13 +32,12 @@ export default function NavLink({ href, icon, children, isOpen }) {
       } py-3 rounded-xl transition-all duration-300 group
         ${
           isActive
-            ? "bg-cyan-500/20 text-cyan-400 shadow-[0_0_15px_#06b6d4] font-semibold"
-            : "text-gray-400 hover:bg-cyan-500/10 hover:text-cyan-300"
+          ? "bg-[#054b25]/15 text-[#8B9D3A] font-semibold"
+          : "text-gray-600 hover:bg-[#8B9D3A]/10 hover:text-[#8B9D3A]"
         }`}
     >
       {Icon && <Icon size={20} />}
 
-      {/* Text Hide / Show */}
       <span
         className={`transition-all duration-300 ${
           isOpen ? "opacity-100" : "opacity-0 w-0 overflow-hidden"

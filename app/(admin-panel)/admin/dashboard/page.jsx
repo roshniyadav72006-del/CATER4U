@@ -14,30 +14,7 @@ import {
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-const COLORS_MAP = {
-  cyan: {
-    text: "text-cyan-600",
-    bg: "bg-cyan-50",
-    icon: "text-cyan-500",
-  },
-  amber: {
-    text: "text-amber-600",
-    bg: "bg-amber-50",
-    icon: "text-amber-500",
-  },
-  emerald: {
-    text: "text-emerald-600",
-    bg: "bg-emerald-50",
-    icon: "text-emerald-500",
-  },
-  violet: {
-    text: "text-violet-600",
-    bg: "bg-violet-50",
-    icon: "text-violet-500",
-  },
-};
-
-const PIE_COLORS = ["#06b6d4", "#818cf8", "#34d399", "#f59e0b", "#f87171"];
+const PIE_COLORS = ["#8B9D3A", "#C9A84C", "#6B7A2A", "#E2C06A", "#A8B560"];
 
 const eventDistributionData = [
   { name: "Wedding", value: 45 },
@@ -47,49 +24,42 @@ const eventDistributionData = [
   { name: "Other", value: 10 },
 ];
 
-// Status badge styles
 function StatusBadge({ status }) {
   const s = status?.toLowerCase();
   const styles = {
-    ongoing:    "bg-emerald-100 text-emerald-700 border-emerald-200",
-    confirmed:  "bg-cyan-100 text-cyan-700 border-cyan-200",
-    preparing:  "bg-amber-100 text-amber-700 border-amber-200",
-    pending:    "bg-orange-100 text-orange-700 border-orange-200",
-    cancelled:  "bg-red-100 text-red-700 border-red-200",
-    completed:  "bg-gray-100 text-gray-600 border-gray-200",
+    ongoing:   { bg: "#e8f0d0", color: "#4a6320", border: "#b5c97a" },
+    confirmed: { bg: "#fdf6dc", color: "#7a5c0a", border: "#e2c06a" },
+    preparing: { bg: "#f5f0d8", color: "#6b5a1a", border: "#c9a84c" },
+    pending:   { bg: "#fef9e7", color: "#856404", border: "#d4a843" },
+    cancelled: { bg: "#fde8e8", color: "#9b1c1c", border: "#f4a4a4" },
+    completed: { bg: "#f3f4f0", color: "#5a5a4a", border: "#c8c8a8" },
   };
-  const dot = {
-    ongoing:   "bg-emerald-500",
-    confirmed: "bg-cyan-500",
-    preparing: "bg-amber-500",
-    pending:   "bg-orange-500",
-    cancelled: "bg-red-500",
-    completed: "bg-gray-400",
+  const dotColor = {
+    ongoing: "#6b8f2a", confirmed: "#c9a84c", preparing: "#a07830",
+    pending: "#c9a000", cancelled: "#dc2626", completed: "#9a9a7a",
   };
+  const st = styles[s] || styles.pending;
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${styles[s] || "bg-gray-100 text-gray-500 border-gray-200"}`}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${dot[s] || "bg-gray-400"}`} />
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 6,
+      padding: "3px 12px", borderRadius: 100,
+      background: st.bg, color: st.color,
+      border: `1px solid ${st.border}`,
+      fontSize: 11, fontWeight: 600,
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: dotColor[s] || "#c9a84c", flexShrink: 0 }} />
       {status}
     </span>
   );
 }
 
-// Dot color for event row
 function EventDot({ status }) {
   const s = status?.toLowerCase();
   const color = {
-    ongoing:   "bg-emerald-500",
-    confirmed: "bg-cyan-500",
-    preparing: "bg-amber-500",
-    pending:   "bg-orange-400",
-    cancelled: "bg-red-500",
-    completed: "bg-gray-400",
+    ongoing: "#6b8f2a", confirmed: "#c9a84c", preparing: "#a07830",
+    pending: "#c9a000", cancelled: "#dc2626", completed: "#9a9a7a",
   };
-  return (
-    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1 ${color[s] || "bg-gray-400"}`} />
-  );
+  return <span style={{ width: 10, height: 10, borderRadius: "50%", background: color[s] || "#c9a84c", flexShrink: 0, marginTop: 4 }} />;
 }
 
 export default function DashboardPage() {
@@ -105,20 +75,15 @@ export default function DashboardPage() {
           fetch("/api/admin/dashboard"),
           fetch("/api/admin/today-events"),
         ]);
-
-        if (!dashRes.ok) throw new Error("Failed to fetch dashboard data");
+        if (!dashRes.ok) throw new Error("Failed");
         const dashData = await dashRes.json();
         setStats(dashData);
-
         if (eventsRes.ok) {
           const eventsData = await eventsRes.json();
           setTodayEvents(eventsData.events || eventsData || []);
         }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
     };
     fetchAll();
   }, []);
@@ -128,304 +93,255 @@ export default function DashboardPage() {
       await fetch("/api/admin/logout", { method: "POST" });
       router.push("/admin/login");
       router.refresh();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    } catch (e) { console.error(e); }
   }
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[70vh] bg-gray-50">
-        <div className="relative w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-2 border-cyan-400/20" />
-          <div className="absolute inset-0 rounded-full border-t-2 border-cyan-500 animate-spin" />
-          <div
-            className="absolute inset-2 rounded-full border-t-2 border-violet-400 animate-spin"
-            style={{ animationDuration: "0.7s", animationDirection: "reverse" }}
-          />
-        </div>
-        <p className="mt-5 text-sm tracking-[0.3em] uppercase text-gray-400 font-light">
-          Loading Analytics
-        </p>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"70vh", background:"#f5f2e8" }}>
+        <div style={{ width:52, height:52, borderRadius:"50%", border:"3px solid #e2c06a", borderTopColor:"#8B9D3A", animation:"spin 0.9s linear infinite" }} />
+        <p style={{ marginTop:16, fontSize:12, letterSpacing:"0.25em", textTransform:"uppercase", color:"#8a7a4a" }}>Loading...</p>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
   }
 
   if (!stats) {
     return (
-      <div className="flex items-center justify-center h-[70vh] bg-gray-50">
-        <div className="text-center p-8 rounded-2xl border border-red-200 bg-red-50">
-          <p className="text-red-500 text-lg">⚠️ Failed to load dashboard data</p>
-          <p className="text-gray-400 text-sm mt-2">
-            Please check your connection and try again
-          </p>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"70vh" }}>
+        <div style={{ padding:32, borderRadius:16, border:"1px solid #f4a4a4", background:"#fde8e8", textAlign:"center" }}>
+          <p style={{ color:"#9b1c1c" }}>⚠️ Failed to load dashboard data</p>
         </div>
       </div>
     );
   }
 
   const cards = [
-    {
-      title: "Total Bookings",
-      value: stats.totalBookings,
-      subtext: "All time",
-      icon: CalendarCheck,
-      color: "cyan",
-    },
-    {
-      title: "Pending",
-      value: stats.pendingBookings,
-      subtext: "Awaiting confirmation",
-      icon: Clock,
-      color: "amber",
-    },
-    {
-      title: "Confirmed",
-      value: stats.confirmedBookings,
-      subtext: "Successfully booked",
-      icon: CheckCircle,
-      color: "emerald",
-    },
-    {
-      title: "Revenue",
-      value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`,
-      subtext: "Total earnings",
-      icon: IndianRupee,
-      color: "violet",
-    },
+    { title: "Total Bookings", value: stats.totalBookings,   subtext: "All time",             icon: CalendarCheck, accent: "#8B9D3A", lightBg: "#f0f4d8", iconColor: "#6b7a2a" },
+    { title: "Pending",        value: stats.pendingBookings, subtext: "Awaiting confirmation", icon: Clock,         accent: "#C9A84C", lightBg: "#fdf6dc", iconColor: "#a07830" },
+    { title: "Confirmed",      value: stats.confirmedBookings, subtext: "Successfully booked", icon: CheckCircle,  accent: "#7a9230", lightBg: "#eaf2d0", iconColor: "#5a7020" },
+    { title: "Revenue",        value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`, subtext: "Total earnings", icon: IndianRupee, accent: "#E2C06A", lightBg: "#fef8e4", iconColor: "#b8920a" },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    <>
       <style>{`
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0); }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap');
+        .og-page { min-height:100vh; background:#f7f4eb; font-family:'DM Sans',sans-serif; color:#2a2a1a; }
+        .og-inner {   width:100%;   padding:2px 20px; }
+
+        /* header */
+        .og-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:16px; }
+        .og-title { font-family:'Playfair Display',serif; font-size:42px; font-weight:700; color:#2a2a1a; letter-spacing:-0.02em; line-height:1; }
+        .og-title span { color:#8B9D3A; }
+        .og-subtitle { font-size:13px; color:#8a7a4a; margin-top:6px; }
+        .og-date { font-size:11px; color:#b0a070; margin-top:2px; }
+        .og-badges { display:flex; gap:10px; align-items:center; }
+        .og-badge { display:flex; align-items:center; gap:7px; padding:7px 16px; border-radius:100px; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; }
+        .og-badge-live { background:#f0f4d8; border:1px solid #c8d890; color:#5a7020; }
+        .og-badge-overview { background:#fdf6dc; border:1px solid #e2c06a; color:#8a6010; }
+        .og-live-dot { width:7px; height:7px; border-radius:50%; background:#8B9D3A; animation:pulse-og 2s ease-in-out infinite; }
+        @keyframes pulse-og { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+        /* stat cards */
+        .og-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:24px; }
+        @media(max-width:900px){.og-cards{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:520px){.og-cards{grid-template-columns:1fr}}
+
+        .og-card {
+          background:#fff;
+          border-radius:18px;
+          padding:24px;
+          border:1px solid #ede8d0;
+          box-shadow:0 2px 12px rgba(139,157,58,0.06);
+          transition:transform 0.25s ease,box-shadow 0.25s ease;
+          position:relative; overflow:hidden;
         }
-        @keyframes pulseDot {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%       { opacity: 0.4; transform: scale(0.8); }
+        .og-card:hover { transform:translateY(-4px); box-shadow:0 10px 32px rgba(139,157,58,0.12); }
+        .og-card::before {
+          content:''; position:absolute; top:0; left:0; right:0; height:3px;
+          background:var(--card-accent);
+          border-radius:18px 18px 0 0;
         }
-        .card-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-        .fade-in   { animation: fadeSlideUp 0.5s ease both; }
-        .delay-1   { animation-delay: 0.05s; }
-        .delay-2   { animation-delay: 0.10s; }
-        .delay-3   { animation-delay: 0.15s; }
-        .delay-4   { animation-delay: 0.20s; }
-        .delay-5   { animation-delay: 0.27s; }
-        .delay-6   { animation-delay: 0.34s; }
+        .og-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; }
+        .og-card-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
+        .og-card-label { font-size:10px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:#a09060; text-align:right; }
+        .og-card-value { font-family:'Playfair Display',serif; font-size:34px; font-weight:700; line-height:1; margin-bottom:4px; }
+        .og-card-sub { font-size:11px; color:#b0a070; }
+        .og-card-line { margin-top:16px; height:1px; background:linear-gradient(90deg,var(--card-accent) 0%,transparent 100%); opacity:0.3; border-radius:4px; }
+
+        /* panels */
+        .og-panel { background:#fff; border-radius:18px; border:1px solid #ede8d0; box-shadow:0 2px 12px rgba(139,157,58,0.06); overflow:hidden; }
+        .og-panel-head { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid #f0ead8; }
+        .og-panel-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+        .og-panel-title { font-size:14px; font-weight:600; color:#2a2a1a; }
+        .og-panel-sub { font-size:11px; color:#a09060; margin-top:1px; }
+
+        /* charts row */
+        .og-charts { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
+        @media(max-width:860px){.og-charts{grid-template-columns:1fr}}
+
+        /* events */
+        .og-event-row { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid #f5f0e0; transition:background 0.15s; }
+        .og-event-row:last-child { border-bottom:none; }
+        .og-event-row:hover { background:#fdfaf0; }
+        .og-event-left { display:flex; align-items:flex-start; gap:12px; min-width:0; }
+        .og-event-name { font-size:13px; font-weight:600; color:#2a2a1a; }
+        .og-event-venue { font-size:11px; color:#a09060; margin-top:2px; }
+        .og-event-right { display:flex; align-items:center; gap:20px; flex-shrink:0; margin-left:16px; }
+        .og-event-meta { display:flex; align-items:center; gap:5px; color:#8a7a4a; font-size:11px; }
+        .og-count-pill { background:#f0f4d8; border:1px solid #c8d890; color:#5a7020; font-size:11px; font-weight:600; padding:3px 12px; border-radius:100px; }
+        .og-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:56px 24px; gap:10px; }
+
+        /* fade in */
+        .og-fade { animation:og-rise 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+        .d1{animation-delay:0.05s} .d2{animation-delay:0.1s} .d3{animation-delay:0.15s}
+        .d4{animation-delay:0.2s} .d5{animation-delay:0.27s} .d6{animation-delay:0.34s}
+        @keyframes og-rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* ── Header ── */}
-        <header className="fade-in flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-none text-gray-800">
-              Dashboard
-            </h1>
-            <p className="mt-2 text-gray-400 text-sm">
-              Welcome back! Here's your catering business overview
-            </p>
-            <p className="mt-1 text-gray-400 text-xs">
-              {new Date().toLocaleDateString("en-IN", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </div>
+      <div className="og-page">
+        <div className="og-inner">
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm">
-              <span
-                className="w-2 h-2 rounded-full bg-emerald-400"
-                style={{ animation: "pulseDot 1.8s ease-in-out infinite" }}
-              />
-              <span className="text-xs tracking-widest uppercase text-gray-500">Live</span>
+          {/* Header */}
+          <header className="og-header og-fade">
+            <div>
+              <h1 className="og-title">Admin <span>Dashboard</span></h1>
+              <p className="og-subtitle">Welcome back! Here's your catering business overview</p>
+              <p className="og-date">{new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</p>
             </div>
-            <div className="flex items-center gap-2 bg-cyan-50 border border-cyan-200 rounded-full px-4 py-2">
-              <Activity size={14} className="text-cyan-500" />
-              <span className="text-xs text-cyan-600 tracking-wider">Overview</span>
-            </div>
-          </div>
-        </header>
-
-        {/* ── Stat Cards ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
-          {cards.map((card, i) => (
-            <StatCard key={card.title} {...card} delay={i + 1} />
-          ))}
-        </div>
-
-        {/* ── Charts Row ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Monthly Revenue Chart */}
-          <div className="fade-in delay-5 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
-              <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center">
-                <TrendingUp size={15} className="text-violet-500" />
+            <div className="og-badges">
+              <div className="og-badge og-badge-live">
+                <span className="og-live-dot" />
+                Live
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-800">Monthly Revenue</h3>
-                <p className="text-xs text-gray-400">Last 12 months analysis</p>
+              <div className="og-badge og-badge-overview">
+                <Activity size={12} />
+                Overview
               </div>
             </div>
-            <div className="p-6">
-              <ChartSection data={stats.monthlyData || []} />
-            </div>
-          </div>
+          </header>
 
-          {/* Event Types Distribution */}
-          <div className="fade-in delay-5 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
-              <div className="w-8 h-8 rounded-lg bg-cyan-50 border border-cyan-100 flex items-center justify-center">
-                <CalendarCheck size={15} className="text-cyan-500" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-800">Event Types Distribution</h3>
-                <p className="text-xs text-gray-400">Bookings by category</p>
-              </div>
-            </div>
-            <div className="p-6" style={{ height: 320 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={eventDistributionData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {eventDistributionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value) => [`${value}%`, "Share"]}
-                    contentStyle={{
-                      borderRadius: "10px",
-                      border: "1px solid #e5e7eb",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Legend
-                    iconType="circle"
-                    iconSize={8}
-                    formatter={(value) => (
-                      <span style={{ color: "#6b7280", fontSize: "12px" }}>{value}</span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Today's Events ── */}
-        <div className="fade-in delay-6 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          {/* Section Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                <CalendarCheck size={15} className="text-emerald-500" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-800">Today's Events</h3>
-                <p className="text-xs text-gray-400">Active catering events scheduled for today</p>
-              </div>
-            </div>
-            <span className="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full font-medium">
-              {todayEvents.length} event{todayEvents.length !== 1 ? "s" : ""}
-            </span>
-          </div>
-
-          {/* Events List */}
-          <div className="divide-y divide-gray-50">
-            {todayEvents.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                  <CalendarCheck size={20} className="text-gray-400" />
+          {/* Stat Cards */}
+          <div className="og-cards">
+            {cards.map((card, i) => {
+              const Icon = card.icon;
+              return (
+                <div key={card.title} className={`og-card og-fade d${i+1}`} style={{"--card-accent": card.accent}}>
+                  <div className="og-card-top">
+                    <div className="og-card-icon" style={{background: card.lightBg}}>
+                      <Icon size={18} style={{color: card.iconColor}} />
+                    </div>
+                    <span className="og-card-label">{card.title}</span>
+                  </div>
+                  <div className="og-card-value" style={{color: card.accent}}>{card.value}</div>
+                  <div className="og-card-sub">{card.subtext}</div>
+                  <div className="og-card-line" />
                 </div>
-                <p className="text-sm text-gray-400 font-medium">No events scheduled for today</p>
-                <p className="text-xs text-gray-300 mt-1">Enjoy your free day!</p>
+              );
+            })}
+          </div>
+
+          {/* Charts */}
+          <div className="og-charts og-fade d5">
+            {/* Revenue */}
+            <div className="og-panel">
+              <div className="og-panel-head">
+                <div style={{display:"flex", alignItems:"center", gap:10}}>
+                  <div className="og-panel-icon" style={{background:"#f0f4d8"}}>
+                    <TrendingUp size={15} style={{color:"#6b7a2a"}} />
+                  </div>
+                  <div>
+                    <div className="og-panel-title">Monthly Revenue</div>
+                    <div className="og-panel-sub">Last 12 months analysis</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{padding:24}}>
+                <ChartSection data={stats.monthlyData || []} />
+              </div>
+            </div>
+
+            {/* Pie */}
+            <div className="og-panel">
+              <div className="og-panel-head">
+                <div style={{display:"flex", alignItems:"center", gap:10}}>
+                  <div className="og-panel-icon" style={{background:"#fdf6dc"}}>
+                    <CalendarCheck size={15} style={{color:"#a07830"}} />
+                  </div>
+                  <div>
+                    <div className="og-panel-title">Event Types Distribution</div>
+                    <div className="og-panel-sub">Bookings by category</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{padding:24, height:300}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={eventDistributionData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
+                      {eventDistributionData.map((_, index) => (
+                        <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(v) => [`${v}%`, "Share"]} contentStyle={{borderRadius:10, border:"1px solid #e2d89a", fontSize:12}} />
+                    <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{color:"#8a7a4a",fontSize:12}}>{v}</span>} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Today's Events */}
+          <div className="og-panel og-fade d6">
+            <div className="og-panel-head">
+              <div style={{display:"flex", alignItems:"center", gap:10}}>
+                <div className="og-panel-icon" style={{background:"#eaf2d0"}}>
+                  <CalendarCheck size={15} style={{color:"#5a7020"}} />
+                </div>
+                <div>
+                  <div className="og-panel-title">Today's Events</div>
+                  <div className="og-panel-sub">Active catering events scheduled for today</div>
+                </div>
+              </div>
+              <span className="og-count-pill">{todayEvents.length} event{todayEvents.length !== 1 ? "s" : ""}</span>
+            </div>
+
+            {todayEvents.length === 0 ? (
+              <div className="og-empty">
+                <div style={{width:48,height:48,borderRadius:"50%",background:"#f0f4d8",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <CalendarCheck size={20} style={{color:"#8B9D3A"}} />
+                </div>
+                <p style={{fontSize:13,color:"#a09060",fontWeight:500}}>No events scheduled for today</p>
+                <p style={{fontSize:11,color:"#c0b080"}}>Enjoy your free day!</p>
               </div>
             ) : (
               todayEvents.map((event, i) => (
-                <div
-                  key={event._id || event.id || i}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors duration-150"
-                >
-                  {/* Left: dot + name + venue */}
-                  <div className="flex items-start gap-3 min-w-0">
+                <div key={event._id || event.id || i} className="og-event-row">
+                  <div className="og-event-left">
                     <EventDot status={event.status} />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 truncate">
-                        {event.eventName || event.name || event.title}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">
-                        {event.venue || event.location || event.venueName || "—"}
-                      </p>
+                    <div style={{minWidth:0}}>
+                      <div className="og-event-name">{event.eventName || event.name || event.title}</div>
+                      <div className="og-event-venue">{event.venue || event.location || event.venueName || "—"}</div>
                     </div>
                   </div>
-
-                  {/* Right: time + guests + status */}
-                  <div className="flex items-center gap-6 flex-shrink-0 ml-4">
-                    {/* Time */}
-                    <div className="hidden sm:flex items-center gap-1.5 text-gray-500">
-                      <Clock size={13} />
-                      <span className="text-xs">
-                        {event.eventTime ||
-                          event.time ||
-                          (event.eventDate
-                            ? new Date(event.eventDate).toLocaleTimeString("en-IN", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : "—")}
-                      </span>
+                  <div className="og-event-right">
+                    <div className="og-event-meta">
+                      <Clock size={12} />
+                      {event.eventTime || event.time || (event.eventDate ? new Date(event.eventDate).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}) : "—")}
                     </div>
-
-                    {/* Guests */}
-                    <div className="hidden md:flex items-center gap-1.5 text-gray-500">
-                      <Users size={13} />
-                      <span className="text-xs">
-                        {event.guestCount || event.guests || event.numberOfGuests || "—"} guests
-                      </span>
+                    <div className="og-event-meta">
+                      <Users size={12} />
+                      {event.guestCount || event.guests || event.numberOfGuests || "—"} guests
                     </div>
-
-                    {/* Status badge */}
                     <StatusBadge status={event.status || "Pending"} />
                   </div>
                 </div>
               ))
             )}
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function StatCard({ title, value, subtext, icon: Icon, color, delay }) {
-  const c = COLORS_MAP[color];
-  return (
-    <div
-      className={`fade-in delay-${delay} card-hover bg-white rounded-2xl border border-gray-100 p-6 relative overflow-hidden shadow-sm`}
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center`}>
-          <Icon size={18} className={c.icon} />
         </div>
-        <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">{title}</span>
       </div>
-      <h2 className={`text-3xl font-bold tracking-tight ${c.text}`}>{value}</h2>
-      <p className="mt-1 text-xs text-gray-400">{subtext}</p>
-      <div className="mt-4 h-px w-full bg-gray-100 rounded-full" />
-    </div>
+    </>
   );
 }

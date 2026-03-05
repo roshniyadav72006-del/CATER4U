@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 import connectDB from "../../../../lib/mongoose";
 import Event from "../../../../models/Event";
-// ✅ Update Event (Status change or any field)
+// ================= UPDATE EVENT =================
 export async function PUT(req, { params }) {
   try {
     await connectDB();
+
+    const { id } = params;
     const body = await req.json();
 
     const updatedEvent = await Event.findByIdAndUpdate(
-      params.id,
+      id,
       body,
       { new: true }
     );
@@ -29,21 +31,14 @@ export async function PUT(req, { params }) {
   }
 }
 
-// ✅ Delete Event
+// ================= DELETE EVENT =================
 export async function DELETE(req, { params }) {
   try {
     await connectDB();
 
-    const deletedEvent = await Event.findByIdAndDelete(params.id);
+    await Event.findByIdAndDelete(params.id);
 
-    if (!deletedEvent) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ message: "Deleted successfully" });
+    return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete event" },

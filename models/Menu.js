@@ -4,23 +4,28 @@ const MenuSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,   // from first schema
+      required: [true, "Menu name is required"],
+      trim: true,
+      minlength: 2,
     },
+
     category: {
       type: String,
-      required: true,   // from first schema
+      required: [true, "Category is required"],
+      trim: true,
     },
+
     image: {
       type: String,
-    },
-    status: {
-      type: String,
-      enum: ["Available", "Out of Stock"],  // from first schema
-      default: "Available",                 // from both schemas
+      default: "",
     },
   },
   { timestamps: true }
 );
 
+// Index for faster filtering (only category now)
+MenuSchema.index({ category: 1 });
+
+// Prevent model overwrite in Next.js
 export default mongoose.models.Menu ||
   mongoose.model("Menu", MenuSchema);

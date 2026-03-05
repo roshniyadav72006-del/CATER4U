@@ -9,7 +9,6 @@ export default function CreateMenuPage() {
   const [form, setForm] = useState({
     name: "",
     category: "",
-    status: "Available",
     image: null,
   });
 
@@ -19,7 +18,6 @@ export default function CreateMenuPage() {
     const formData = new FormData();
     formData.append("name", form.name);
     formData.append("category", form.category);
-    formData.append("status", form.status);
     if (form.image) formData.append("image", form.image);
 
     await fetch("/api/admin/menu", {
@@ -31,49 +29,67 @@ export default function CreateMenuPage() {
   };
 
   return (
-    <div className="p-10">
-      <h1 className="text-2xl font-bold mb-6">Create Menu</h1>
+    <div className="min-h-screen bg-[#F5E6B3] flex items-center justify-center">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Name"
-          className="border p-2 w-full"
-          onChange={(e) =>
-            setForm({ ...form, name: e.target.value })
-          }
-        />
+        <h1 className="text-3xl font-bold mb-6 text-[#3D4F1C] text-center">
+          Create Menu
+        </h1>
 
-        <input
-          type="text"
-          placeholder="Category"
-          className="border p-2 w-full"
-          onChange={(e) =>
-            setForm({ ...form, category: e.target.value })
-          }
-        />
+        <form onSubmit={handleSubmit} className="space-y-5">
 
-        <select
-          className="border p-2 w-full"
-          onChange={(e) =>
-            setForm({ ...form, status: e.target.value })
-          }
-        >
-          <option value="Available">Available</option>
-          <option value="Out of Stock">Out of Stock</option>
-        </select>
+          <input
+            type="text"
+            placeholder="Menu Name"
+            required
+            className="border border-[#556B2F] focus:ring-2 focus:ring-[#D4AF37] outline-none p-3 w-full rounded"
+            onChange={(e) =>
+              setForm({ ...form, name: e.target.value })
+            }
+          />
 
-        <input
-          type="file"
-          onChange={(e) =>
-            setForm({ ...form, image: e.target.files[0] })
-          }
-        />
+          {/* Category Dropdown */}
+          <select
+            required
+            className="border border-[#556B2F] focus:ring-2 focus:ring-[#D4AF37] outline-none p-3 w-full rounded bg-white"
+            onChange={(e) =>
+              setForm({ ...form, category: e.target.value })
+            }
+          >
+            <option value="">Select Category</option>
+            <option value="Starter">Starter</option>
+            <option value="Main Course">Main Course</option>
+            <option value="Dessert">Dessert</option>
+            <option value="Beverages">Beverages</option>
+          </select>
 
-        <button className="bg-black text-white px-6 py-2 rounded">
-          Save
-        </button>
-      </form>
+          <input
+            type="file"
+            accept="image/*"
+            className="border border-[#556B2F] p-2 w-full rounded bg-white"
+            onChange={(e) =>
+              setForm({ ...form, image: e.target.files[0] })
+            }
+          />
+
+          {/* Buttons Row */}
+          <div className="flex gap-4">
+         <button
+         type="submit"
+          className="w-1/2 bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold py-3 rounded-lg transition shadow"  >
+          Save Menu
+         </button>
+
+          <button
+           type="button"
+            onClick={() => router.push("/admin/menu")}
+             className="w-1/2 bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold py-3 rounded-lg transition shadow">
+             Cancel
+            </button>
+            </div>
+
+        </form>
+      </div>
     </div>
   );
 }

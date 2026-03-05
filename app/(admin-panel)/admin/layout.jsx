@@ -16,18 +16,25 @@ export default function AdminLayout({ children }) {
   ];
 
   return (
-    <div className="flex h-screen bg-[#0f0f1b] text-white">
+    <div className="flex h-screen bg-white text-[#8B9D3A]">
 
       {/* Sidebar */}
       <aside
         className={`${
           isOpen ? "w-64" : "w-20"
-        } bg-[#151528] border-r border-[#b026ff]/30 flex flex-col shadow-lg shadow-[#b026ff]/10 transition-all duration-300`}
+        } bg-white border-r border-[#8B9D3A]/30 flex flex-col shadow-md transition-all duration-300`}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-[#b026ff]/20">
-          <h1 className="text-xl font-bold text-[#d36bff] tracking-wide">
-            {isOpen ? "Chandani Catering Services" : "CA"}
+        <div className="p-6 border-b border-[#8B9D3A]/30">
+          <h1 className="text-xl font-bold tracking-wide">
+            {isOpen ? (
+              <>
+                <span className="text-[#8B9D3A]">Chandani</span>{" "}
+                <span className="text-[#8B9D3A]">Catering</span>
+              </>
+            ) : (
+              <span className="text-[#8B9D3A]">CC</span>
+            )}
           </h1>
         </div>
 
@@ -46,12 +53,12 @@ export default function AdminLayout({ children }) {
         </nav>
 
         {/* Bottom Section */}
-        <div className="p-4 border-t border-[#b026ff]/20 text-sm text-[#8a8aa3]">
+        <div className="p-4 border-t border-[#8B9D3A]/30 text-sm">
           {isOpen && (
             <>
-              <div>
+              <div className="text-[#D4AF37]">
                 Logged in as
-                <div className="font-semibold text-[#d36bff] mt-1">
+                <div className="font-semibold text-[#8B9D3A] mt-1">
                   Admin
                 </div>
               </div>
@@ -68,17 +75,17 @@ export default function AdminLayout({ children }) {
       <div className="flex-1 flex flex-col">
 
         {/* Top Navbar */}
-        <div className="h-16 flex items-center px-6 border-b border-[#b026ff]/20 bg-[#151528]">
+        <div className="h-16 flex items-center px-6 border-b border-[#8B9D3A]/30 bg-white">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-2xl text-[#d36bff]"
+            className="text-2xl text-[#8B9D3A] hover:text-[#8B9D3A] transition-colors duration-300"
           >
             ☰
           </button>
         </div>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-8 bg-[#0f0f1b]">
+        <main className="flex-1 overflow-y-auto p-8 bg-white">
           {children}
         </main>
 
