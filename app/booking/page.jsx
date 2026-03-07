@@ -35,7 +35,7 @@ const handleSubmit = async () => {
     console.log("TOKEN FROM STORAGE:", token);
 
     if (!token) {
-      alert("Please login first");
+      toast.error("Please login first");
       return;
     }
 
@@ -51,7 +51,7 @@ const handleSubmit = async () => {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.message);
+      toast.error(data.message);
       return;
     }
 
@@ -75,7 +75,7 @@ const handleSubmit = async () => {
    router.push("/booking-success");
   } catch (error) {
     console.error(error);
-    alert("Something went wrong");
+    toast.error("Something went wrong");
   }
 };
 

@@ -49,7 +49,7 @@ export async function POST(req) {
     // 📧 Send OTP email
     await sendEmail({
       to: email,
-      subject: "Cater4U Email Verification OTP",
+      subject: "Chandani Catering Services Email Verification OTP",
       html: `
         <h2>Email Verification</h2>
         <p>Your OTP code is:</p>

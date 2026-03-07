@@ -258,7 +258,7 @@ export default function RegisterPage() {
               boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
             }}>🍽️</div>
             <h1 style={{ margin: 0, fontSize: "28px", fontWeight: 800, color: "#fff", letterSpacing: "-0.5px" }}>
-              CATER4U
+              Chandani Catering Services
             </h1>
             <p style={{ margin: "6px 0 0", color: "rgba(255,255,255,0.5)", fontSize: "13px", fontWeight: 500 }}>
               Create your account to get started

@@ -28,7 +28,7 @@ export async function POST(req) {
       subject: "Reset Your Password",
       html: `
         <p>Hello,</p>
-        <p>You requested to reset your Cater4U password.</p>
+        <p>You requested to reset your Chandani Catering Services password.</p>
         <p>Click the link below:</p>
         <a href="${resetLink}" target="_blank">${resetLink}</a>
         <p>This link is valid for 30 minutes.</p>

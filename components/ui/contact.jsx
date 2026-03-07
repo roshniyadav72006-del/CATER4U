@@ -142,8 +142,8 @@ export default function Contact() {
                   <Mail className="w-6 h-6 text-amber-500 mt-1" />
                   <div>
                     <p className="text-gray-300">Email</p>
-                    <a href="mailto:info@cater4u.com" className="text-xl hover:text-amber-400">
-                      info@cater4u.com
+                    <a href="mailto:info@chandanicateringservices.com" className="text-xl hover:text-amber-400">
+                      info@chandaniateringservices.com
                     </a>
                   </div>
                 </div>

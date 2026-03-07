@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import connectDB from "../../../lib/mongoose";
 import Booking from "../../../models/Booking";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 
 export async function POST(req) {
   try {
     await connectDB();
 
+    // 🔹 Check Authorization Header
     const authHeader = req.headers.get("authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -17,11 +19,8 @@ export async function POST(req) {
     }
 
     const token = authHeader.split(" ")[1];
-    console.log("TOKEN RECEIVED:", token);
-    console.log("SECRET:", process.env.JWT_SECRET);   // 👈 YAHAN ADD KARO
 
     let decoded;
-
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
@@ -48,7 +47,7 @@ export async function POST(req) {
       phone,
     } = body;
 
-    // Basic validation
+    // 🔹 Basic validation
     if (
       !eventType ||
       !eventDate ||
@@ -66,8 +65,9 @@ export async function POST(req) {
       );
     }
 
+    // 🔹 Create Booking
     const newBooking = await Booking.create({
-      userId: decoded.userId, // JWT se user id
+      userId: decoded.userId || decoded.id, // safe handling
       eventType,
       eventDate,
       eventTime,
@@ -80,12 +80,46 @@ export async function POST(req) {
       fullName,
       email,
       phone,
+      status: "pending",
     });
+
+    // ================= EMAIL SENDING =================
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Cater4U Booking Confirmation 🎉",
+      html: `
+        <h2>Booking Confirmed!</h2>
+        <p><strong>Name:</strong> ${fullName}</p>
+        <p><strong>Event:</strong> ${eventType}</p>
+        <p><strong>Date:</strong> ${eventDate}</p>
+        <p><strong>Time:</strong> ${eventTime}</p>
+        <p><strong>Guests:</strong> ${guests}</p>
+        <p><strong>Venue:</strong> ${venueType}</p>
+        <p><strong>Total Amount:</strong> ₹${totalPrice}</p>
+        <br/>
+        <p>Status: Pending</p>
+        <br/>
+        <p>Thank you for choosing Cater4U 💙</p>
+      `,
+    });
+
+    // =================================================
 
     return NextResponse.json(
       { message: "Booking saved successfully", booking: newBooking },
       { status: 201 }
     );
+
   } catch (error) {
     console.error(error);
     return NextResponse.json(

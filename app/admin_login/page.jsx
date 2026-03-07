@@ -84,12 +84,12 @@ export default function AdminLoginPage() {
           <div className="flex flex-col items-center mb-4">
             <Image
               src="/logo1.svg"
-              alt="CATER4U Logo"
+              alt="Chandani Catering Services Logo"
               width={240}
               height={240}
               className="mb-1"
             />
-            <h1 className="text-4xl font-bold leading-tight">CATER4U</h1>
+            <h1 className="text-4xl font-bold leading-tight">Chandani Catering Services </h1>
           </div>
 
           <h2 className="text-2xl font-bold text-center mb-6">

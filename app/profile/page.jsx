@@ -44,40 +44,36 @@ export default function ProfilePage() {
       .then((data) => setOrders(data))
       .catch(() => {});
   }, []);
-const handleSave = async () => {
-  const userId = localStorage.getItem("userId");
 
-  const updatedData = {
-    userId: userId,
-    username: formData.username,
-    phone: formData.phone,
-    address: formData.address,
-    image: previewImage || "",
-  };
+  const handleSave = async () => {
+    const userId = localStorage.getItem("userId");
+    const updatedData = { ...formData, image: previewImage };
 
-  try {
-    const res = await fetch("/api/profile", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedData),
-    });
-
-    if (!res.ok) {
-      throw new Error("Update failed");
-    }
-
-    const data = await res.json();
-
-    setUser(data);
-    setPreviewImage(data.image);
+    // ✅ Optimistic update — UI turant change ho jaata hai
+    setUser((prev) => ({ ...prev, ...formData, image: previewImage }));
     setIsEditing(false);
+    setIsSaving(true);
 
-  } catch (error) {
-    console.error("Update error:", error);
-  }
-};
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", userid: userId },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!res.ok) throw new Error("Server error");
+
+      const data = await res.json();
+      setUser(data); // server response se confirm update
+      showToast("Profile updated successfully! ✓", "success");
+    } catch (err) {
+      // Revert agar API fail ho
+      showToast("Failed to save. Please try again.", "error");
+      setIsEditing(true); // editing mode back
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (!user)
     return (

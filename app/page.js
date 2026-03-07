@@ -27,7 +27,7 @@ export default function Home() {
 
         <Image
           src="/home.png"
-          alt="Cater4U"
+          alt="Chandani Catering Services"
           fill
           priority
           className="object-cover"
@@ -37,7 +37,7 @@ export default function Home() {
 
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center text-white px-6">
           <h1 className="text-5xl font-bold mb-4">
-            Welcome to <span className="text-yellow-400">CATER4U</span>
+            Welcome to <span className="text-yellow-400">Chandani Catering Services</span>
           </h1>
 
           <p className="max-w-xl mb-6 text-gray-200">
@@ -101,7 +101,7 @@ export default function Home() {
             </h2>
 
             <p className="text-gray-600 leading-relaxed">
-              We at Cater4U pride ourselves in providing quality service and
+              We at CHANDANI CATERIN SERVICE pride ourselves in providing quality service and
               creating mouth-watering pure vegetarian cuisine.
               <br /><br />
               With over 30 years of experience, we specialise in marwadi and
