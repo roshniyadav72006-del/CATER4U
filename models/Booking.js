@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-import { type } from "os";
+
+import "./User";
+
 
 const bookingSchema = new mongoose.Schema(
   {

@@ -2,12 +2,17 @@ import mongoose from "mongoose";
 
 const EventSchema = new mongoose.Schema(
   {
-    name: {
+    name: { type: String, required: true },
+    emoji: { type: String },
+    description: { type: String },
+    minGuests: { type: Number },
+    maxGuests: { type: Number },
+    totalBookings: { type: Number, default: 0 },
+    status: {
       type: String,
-      enum: ["wedding", "birthday", "corporate", "party"],
-      required: true,
+      enum: ["active", "inactive"],
+      default: "active",
     },
-    description: String,
   },
   { timestamps: true }
 );

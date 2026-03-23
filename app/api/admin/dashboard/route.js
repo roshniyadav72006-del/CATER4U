@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import connectDB from "../../../../lib/mongoose";
 import Booking from "../../../../models/Booking";
 
-
 export async function GET() {
   try {
     await connectDB();
@@ -25,20 +24,20 @@ export async function GET() {
       status: "Completed",
     });
 
-    // Total Revenue (Completed bookings only)
+    // ✅ Total Revenue (Completed only)
     const revenueData = await Booking.aggregate([
       { $match: { status: "Completed" } },
       {
         $group: {
           _id: null,
-          total: { $sum: "$totalPrice" }, // ✅ correct field
+          total: { $sum: "$totalPrice" },
         },
       },
     ]);
 
     const totalRevenue = revenueData[0]?.total || 0;
 
-    // Monthly Booking Data
+    // ✅ Monthly Booking Count
     const monthlyData = await Booking.aggregate([
       {
         $group: {

@@ -6,7 +6,7 @@ export default function Footer() {
 
   return (
     <footer style={{
-      background: "linear-gradient(160deg, #0d2e0d 0%, #1B5E20 50%, #0d2e0d 100%)",
+      background: "linear-gradient(160deg, #0d2e0d 0%, #325b0a 50%, #0d2e0d 100%)",
       color: "#FFF8E1",
       fontFamily: "'Plus Jakarta Sans', sans-serif",
       position: "relative",
@@ -19,7 +19,7 @@ export default function Footer() {
       <div style={{
         position: "absolute", top: "-80px", left: "-60px",
         width: "320px", height: "320px", borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(85,107,47,0.25), transparent 70%)",
+        background: "radial-gradient(circle, rgba(68, 93, 26, 0.25), transparent 70%)",
         pointerEvents: "none",
       }} />
       <div style={{
@@ -56,7 +56,12 @@ export default function Footer() {
               border: "1px solid rgba(212,175,55,0.35)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <ChefHat size={22} color="#D4AF37" />
+            
+           <img
+            src="/Logo.svg"
+            alt="Logo"
+           style={{ width: "38px", height: "28px" }}
+           />
             </div>
             <span style={{ fontSize: "22px", fontWeight: 900, color: "#FFF8E1", letterSpacing: "-0.5px" }}>
               Chandani Catering Services
@@ -159,41 +164,7 @@ export default function Footer() {
             ))}
           </div>
 
-          {/* Newsletter */}
-          <div style={{
-            background: "rgba(255,248,225,0.05)",
-            border: "1px solid rgba(212,175,55,0.2)",
-            borderRadius: "14px", padding: "16px",
-          }}>
-            <p style={{ margin: "0 0 10px", fontSize: "12px", fontWeight: 700, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "0.8px" }}>
-              Stay Updated
-            </p>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <input
-                type="email"
-                placeholder="Your email"
-                style={{
-                  flex: 1, background: "rgba(255,248,225,0.08)",
-                  border: "1px solid rgba(212,175,55,0.2)",
-                  borderRadius: "8px", padding: "8px 12px",
-                  fontSize: "13px", color: "#FFF8E1", outline: "none",
-                  fontFamily: "inherit",
-                }}
-                className="newsletter-input"
-              />
-              <button style={{
-                padding: "8px 14px", borderRadius: "8px", border: "none",
-                background: "linear-gradient(135deg, #556B2F, #D4AF37)",
-                color: "#0d2e0d", fontSize: "12px", fontWeight: 800,
-                cursor: "pointer", whiteSpace: "nowrap",
-                transition: "opacity 0.2s",
-              }}
-                className="newsletter-btn"
-              >
-                Subscribe
-              </button>
-            </div>
-          </div>
+          
         </div>
       </div>
 
@@ -221,7 +192,7 @@ export default function Footer() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#4ade80", animation: "pulse 2s infinite" }} />
+          <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#126c33", animation: "pulse 2s infinite" }} />
           <span style={{ fontSize: "12px", color: "rgba(255,248,225,0.35)" }}>All systems operational</span>
         </div>
       </div>

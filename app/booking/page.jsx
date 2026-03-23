@@ -1,409 +1,488 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
+
+const COOKIE_FORM = "booking_form";
+const COOKIE_STEP = "booking_step";
+const COOKIE_MENU = "booking_menu";
+
+const REQUIRED_STEP1_FIELDS = [
+  "eventType",
+  "eventDate",
+  "eventTime",
+  "guests",
+  "venueType",
+  "venueAddress",
+  "specialRequests",
+];
+
+const COOKIE_OPTIONS = { expires: 1 };
+
+const clearBookingCookies = () => {
+  Cookies.remove(COOKIE_FORM);
+  Cookies.remove(COOKIE_STEP);
+  Cookies.remove(COOKIE_MENU);
+};
+
+// ✅ Aaj ki date "YYYY-MM-DD" format mein
+const today = new Date().toISOString().split("T")[0];
 
 export default function BookingPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-  eventType: "",
-  eventDate: "",
-  eventTime: "",
-  guests: "",
-  venueType: "",
-  venueAddress: "",
-  specialRequests: "",
-  selectedMenu: [],
-  totalPrice: 0,
-  fullName: "",
-  email: "",
-  phone: "",
-});
+  const [errors, setErrors] = useState({});
+  const [authChecked, setAuthChecked] = useState(false);
 
-const handleChange = (e) => {
-  setFormData({
-    ...formData,
-    [e.target.name]: e.target.value,
-  });
-};
-
-const handleSubmit = async () => {
-  try {
+  useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("TOKEN FROM STORAGE:", token);
-
     if (!token) {
-      toast.error("Please login first");
-      return;
+      toast.error("Please login to book an event");
+      router.replace("/login");
+    } else {
+      setAuthChecked(true);
     }
+  }, []);
 
-    const res = await fetch("/api/booking", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(formData),
-    });
+  const getInitialState = () => {
+    try {
+      const savedForm = JSON.parse(Cookies.get(COOKIE_FORM) || "{}");
+      const savedMenu = JSON.parse(Cookies.get(COOKIE_MENU) || "[]");
+      const savedStep = parseInt(Cookies.get(COOKIE_STEP) || "1");
 
-    const data = await res.json();
+      const step1Complete = REQUIRED_STEP1_FIELDS.every(
+        (field) => savedForm[field] && String(savedForm[field]).trim() !== ""
+      );
 
-    if (!res.ok) {
-      toast.error(data.message);
-      return;
+      const resolvedStep = savedStep > 1 && !step1Complete ? 1 : savedStep;
+
+      if (resolvedStep !== savedStep) {
+        Cookies.set(COOKIE_STEP, "1", COOKIE_OPTIONS);
+      }
+
+      return {
+        step: resolvedStep,
+        formData: {
+          eventType: "",
+          eventDate: "",
+          eventTime: "",
+          guests: "",
+          venueType: "",
+          venueAddress: "",
+          specialRequests: "",
+          totalPrice: 0,
+          fullName: "",
+          email: "",
+          phone: "",
+          ...savedForm,
+          selectedMenu: savedMenu,
+        },
+      };
+    } catch {
+      return {
+        step: 1,
+        formData: {
+          eventType: "",
+          eventDate: "",
+          eventTime: "",
+          guests: "",
+          venueType: "",
+          venueAddress: "",
+          specialRequests: "",
+          selectedMenu: [],
+          totalPrice: 0,
+          fullName: "",
+          email: "",
+          phone: "",
+        },
+      };
     }
+  };
 
-    // Clear form
-    setFormData({
-      eventType: "",
-     eventDate: "",
-     eventTime: "",
-     guests: "",
-     venueType: "",
-     venueAddress: "",
-     specialRequests: "",
-     selectedMenu: [],
-     totalPrice: 0,
-     fullName: "",
-     email: "",
-     phone: "",
-    });
+  const initial = getInitialState();
+  const [step, setStep] = useState(initial.step);
+  const [formData, setFormData] = useState(initial.formData);
 
-    // Redirect
-   router.push("/booking-success");
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong");
+  useEffect(() => {
+    const { selectedMenu, ...rest } = formData;
+    Cookies.set(COOKIE_FORM, JSON.stringify(rest), COOKIE_OPTIONS);
+    Cookies.set(COOKIE_MENU, JSON.stringify(selectedMenu), COOKIE_OPTIONS);
+  }, [formData]);
+
+  const goToStep = (newStep) => {
+    setStep(newStep);
+    Cookies.set(COOKIE_STEP, String(newStep), COOKIE_OPTIONS);
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" });
+  };
+
+  const removeMenuItem = (index) => {
+    const updated = formData.selectedMenu.filter((_, i) => i !== index);
+    setFormData((prev) => ({ ...prev, selectedMenu: updated }));
+  };
+
+  const validateStep1 = () => {
+    const newErrors = {};
+    if (!formData.eventType) newErrors.eventType = "Event type is required";
+    if (!formData.eventDate) {
+      newErrors.eventDate = "Event date is required";
+    } else if (formData.eventDate < today) {
+      // ✅ Extra safety — agar koi manually type kare past date toh bhi reject karo
+      newErrors.eventDate = "Event date cannot be in the past";
+    }
+    if (!formData.eventTime) newErrors.eventTime = "Event time is required";
+    if (!formData.guests || Number(formData.guests) <= 0)
+      newErrors.guests = "Number of guests is required";
+    if (!formData.venueType) newErrors.venueType = "Venue type is required";
+    if (!formData.venueAddress) newErrors.venueAddress = "Venue address is required";
+    if (!formData.specialRequests)
+      newErrors.specialRequests = "Please enter any special requests or write 'None'";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep3 = () => {
+    const newErrors = {};
+    if (!formData.fullName) newErrors.fullName = "Full name is required";
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(formData.email))
+      newErrors.email = "Enter a valid email address";
+    if (!formData.phone) newErrors.phone = "Phone number is required";
+    else if (!/^\d{10}$/.test(formData.phone))
+      newErrors.phone = "Enter a valid 10-digit phone number";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleStep1Next = () => {
+    if (validateStep1()) goToStep(2);
+  };
+
+  const handleStep3Submit = async () => {
+    if (!validateStep3()) return;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login first");
+        router.replace("/login");
+        return;
+      }
+
+      const res = await fetch("/api/booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message);
+        return;
+      }
+
+      clearBookingCookies();
+      toast.success("Your booking has been submitted! Please wait for confirmation.");
+      router.push("/booking-success");
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    }
+  };
+
+  const ErrorMsg = ({ field }) =>
+    errors[field] ? (
+      <p className="text-red-500 text-sm mt-1">{errors[field]}</p>
+    ) : null;
+
+  const inputStyle = (field) => ({
+    borderColor: errors[field] ? "#ef4444" : "#b5c4a1",
+  });
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F5F0DC" }}>
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-10 h-10 rounded-full border-4 animate-spin"
+            style={{ borderColor: "#2D5016", borderTopColor: "transparent" }}
+          />
+          <p style={{ color: "#2D5016", fontSize: "0.9rem" }}>Checking authentication...</p>
+        </div>
+      </div>
+    );
   }
-};
 
   return (
-    <div className="pt-24 bg-[#D5FFFF] min-h-screen">
+    <div className="pt-24 min-h-screen" style={{ backgroundColor: "#F5F0DC" }}>
 
-      {/* ================= HEADER ================= */}
-      <div className="text-black py-14 text-center">
+      {/* HEADER */}
+      <div className="py-14 text-center">
+        <div className="w-16 h-1 mx-auto mb-6 rounded-full" style={{ backgroundColor: "#C9A84C" }}></div>
+        <h1 className="text-4xl font-bold mb-3" style={{ color: "#2D5016" }}>Book Your Event</h1>
+        <p style={{ color: "#5a5a5a" }}>Let us make your event memorable with our catering services</p>
 
-        <h1 className="text-4xl font-bold mb-3">
-          Book Your Event
-        </h1>
-
-        <p className="text-gray-700">
-          Let us make your event memorable with our catering services
-        </p>
-
-        {/* ===== STEPPER ===== */}
+        {/* STEPPER */}
         <div className="flex justify-center items-center gap-10 mt-8">
           {[1, 2, 3].map((num) => (
             <div key={num} className="flex items-center gap-4">
-
               <div
-                className={`w-11 h-11 flex items-center justify-center rounded-full font-bold transition-all
-                ${
-                  step === num
-                    ? "bg-[#04D9FF] text-black shadow-[0_0_20px_#04D9FF]"
-                    : step > num
-                    ? "bg-[#04D9FF] text-black"
-                    : "bg-gray-300 text-gray-700"
-                }`}
+                className="w-11 h-11 flex items-center justify-center rounded-full font-bold transition-all"
+                style={{
+                  backgroundColor: step >= num ? "#2D5016" : "transparent",
+                  color: step >= num ? "#ffffff" : "#2D5016",
+                  border: `2px solid ${step >= num ? "#2D5016" : "#b5c4a1"}`,
+                }}
               >
                 {step > num ? "✓" : num}
               </div>
-
               {num !== 3 && (
-                <div
-                  className={`w-20 h-[4px] rounded-full
-                  ${
-                    step > num
-                      ? "bg-[#04D9FF]"
-                      : "bg-gray-300"
-                  }`}
-                ></div>
+                <div className="w-20 h-[3px] rounded-full"
+                  style={{ backgroundColor: step > num ? "#2D5016" : "#b5c4a1" }}></div>
               )}
             </div>
           ))}
         </div>
 
         <div className="flex justify-center gap-24 mt-3 text-sm font-medium">
-          <span className={step === 1 ? "text-[#04D9FF]" : "text-gray-600"}>
-            Event Details
-          </span>
-          <span className={step === 2 ? "text-[#04D9FF]" : "text-gray-600"}>
-            Menu Selection
-          </span>
-          <span className={step === 3 ? "text-[#04D9FF]" : "text-gray-600"}>
-            Review
-          </span>
+          <span style={{ color: step === 1 ? "#2D5016" : "#888" }}>Event Details</span>
+          <span style={{ color: step === 2 ? "#2D5016" : "#888" }}>Menu Selection</span>
+          <span style={{ color: step === 3 ? "#2D5016" : "#888" }}>Review</span>
         </div>
       </div>
 
       <div className="px-6 pb-20">
-        {/* ================= STEP 1 ================= */}
-          {step === 1 && (
-         <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-md p-12">
 
-    <h2 className="text-2xl font-semibold mb-8">
-      Event Details
-    </h2>
+        {/* STEP 1 */}
+        {step === 1 && (
+          <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-md p-6 md:p-12">
+            <h2 className="text-2xl font-semibold mb-8" style={{ color: "#2D5016" }}>Event Details</h2>
 
-    <div className="grid md:grid-cols-2 gap-6">
+            {formData.selectedMenu.length > 0 && (
+              <div className="mb-6 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2"
+                style={{ backgroundColor: "#edf5e1", color: "#2D5016", border: "1px solid #b5c4a1" }}>
+                ✅ {formData.selectedMenu.length} menu item(s) already selected. Please fill in event details to continue.
+              </div>
+            )}
 
-      <div>
-        <label className="block mb-2 text-gray-600">Event Type</label>
-        <select
-          name="eventType"
-          value={formData.eventType}
-          onChange={handleChange}
-          className="w-full border rounded-lg p-3"
-        >
-          <option value="">Select event type</option>
-          <option>Wedding</option>
-          <option>Birthday</option>
-          <option>Corporate</option>
-          <option>Engagement</option>
-        </select>
-      </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 
-      <div>
-        <label className="block mb-2 text-gray-600">Event Date</label>
-        <input
-          type="date"
-          name="eventDate"
-          value={formData.eventDate}
-          onChange={handleChange}
-          className="w-full border rounded-lg p-3"
-        />
-      </div>
+              <div>
+                <label className="block mb-2 text-gray-600">Event Type <span className="text-red-500">*</span></label>
+                <select name="eventType" value={formData.eventType} onChange={handleChange}
+                  className="w-full border rounded-lg p-3 focus:outline-none" style={inputStyle("eventType")}>
+                  <option value="">Select event type</option>
+                  <option>Wedding</option>
+                  <option>Birthday</option>
+                  <option>Corporate</option>
+                  <option>Engagement</option>
+                </select>
+                <ErrorMsg field="eventType" />
+              </div>
 
-      <div>
-        <label className="block mb-2 text-gray-600">Event Time</label>
-        <input
-          type="time"
-          name="eventTime"
-          value={formData.eventTime}
-          onChange={handleChange}
-          className="w-full border rounded-lg p-3"
-        />
-      </div>
+              <div>
+                <label className="block mb-2 text-gray-600">Event Date <span className="text-red-500">*</span></label>
+                {/* ✅ min=today — calendar mein aaj se pehle ki dates grey/disabled hongi */}
+                <input
+                  type="date"
+                  name="eventDate"
+                  value={formData.eventDate}
+                  onChange={handleChange}
+                  min={today}
+                  className="w-full border rounded-lg p-3 focus:outline-none"
+                  style={inputStyle("eventDate")}
+                />
+                <ErrorMsg field="eventDate" />
+              </div>
 
-      <div>
-        <label className="block mb-2 text-gray-600">Number of Guests</label>
-        <input
-          type="number"
-          name="guests"
-          value={formData.guests}
-          onChange={handleChange}
-          placeholder="50"
-          className="w-full border rounded-lg p-3"
-        />
-      </div>
+              <div>
+                <label className="block mb-2 text-gray-600">Event Time <span className="text-red-500">*</span></label>
+                <input type="time" name="eventTime" value={formData.eventTime} onChange={handleChange}
+                  className="w-full border rounded-lg p-3 focus:outline-none" style={inputStyle("eventTime")} />
+                <ErrorMsg field="eventTime" />
+              </div>
 
-      <div>
-        <label className="block mb-2 text-gray-600">Venue Type</label>
-        <select
-          name="venueType"
-          value={formData.venueType}
-          onChange={handleChange}
-          className="w-full border rounded-lg p-3"
-        >
-          <option value="">Select venue</option>
-          <option>Indoor</option>
-          <option>Outdoor</option>
-        </select>
-      </div>
+              <div>
+                <label className="block mb-2 text-gray-600">Number of Guests <span className="text-red-500">*</span></label>
+                <input type="number" name="guests" value={formData.guests} onChange={handleChange}
+                  placeholder="50" min="1"
+                  className="w-full border rounded-lg p-3 focus:outline-none" style={inputStyle("guests")} />
+                <ErrorMsg field="guests" />
+              </div>
 
-      <div>
-        <label className="block mb-2 text-gray-600">Venue Address</label>
-        <input
-          type="text"
-          name="venueAddress"
-          value={formData.venueAddress}
-          onChange={handleChange}
-          placeholder="Enter address"
-          className="w-full border rounded-lg p-3"
-        />
-      </div>
+              <div>
+                <label className="block mb-2 text-gray-600">Venue Type <span className="text-red-500">*</span></label>
+                <select name="venueType" value={formData.venueType} onChange={handleChange}
+                  className="w-full border rounded-lg p-3 focus:outline-none" style={inputStyle("venueType")}>
+                  <option value="">Select venue</option>
+                  <option>Indoor</option>
+                  <option>Outdoor</option>
+                </select>
+                <ErrorMsg field="venueType" />
+              </div>
 
-      <div className="md:col-span-2">
-        <label className="block mb-2 text-gray-600">
-          Special Requests or Dietary Requirements
-        </label>
-        <textarea
-          rows="4"
-          name="specialRequests"
-          value={formData.specialRequests}
-          onChange={handleChange}
-          placeholder="Any allergies, dietary restrictions, or special requests..."
-          className="w-full border rounded-lg p-3 resize-none"
-        ></textarea>
-      </div>
+              <div>
+                <label className="block mb-2 text-gray-600">Venue Address <span className="text-red-500">*</span></label>
+                <input type="text" name="venueAddress" value={formData.venueAddress} onChange={handleChange}
+                  placeholder="Enter address"
+                  className="w-full border rounded-lg p-3 focus:outline-none" style={inputStyle("venueAddress")} />
+                <ErrorMsg field="venueAddress" />
+              </div>
 
-      </div>
-
-          <div className="flex justify-end mt-10">
-            <button
-               onClick={() => setStep(2)}
-               className="bg-[#04D9FF] text-black px-10 py-3 rounded-lg shadow-[0_0_15px_#04D9FF]">
-               Next
-             </button>
-           </div>
-           </div>
-    )}
-
-
-        {/* ================= STEP 2 ================= */}
-        {step === 2 && (
-          <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-md p-12">
-
-            <div className="flex justify-between items-center mb-10">
-              <h2 className="text-2xl font-semibold">Menu Selection</h2>
-
-              <button className="bg-[#04D9FF] text-black px-6 py-3 rounded-full shadow-[0_0_15px_#04D9FF]">
-                + Add Menu Items
-              </button>
+              <div className="md:col-span-2">
+                <label className="block mb-2 text-gray-600">
+                  Special Requests or Dietary Requirements <span className="text-red-500">*</span>
+                </label>
+                <textarea rows="4" name="specialRequests" value={formData.specialRequests} onChange={handleChange}
+                  placeholder="Any allergies, dietary restrictions, or special requests... (write 'None' if not applicable)"
+                  className="w-full border rounded-lg p-3 resize-none focus:outline-none"
+                  style={inputStyle("specialRequests")}></textarea>
+                <ErrorMsg field="specialRequests" />
+              </div>
             </div>
 
-            <div className="text-center text-gray-500 py-16">
-              No menu items selected. Click "Add Menu Items" to get started.
-            </div>
-
-            <div className="flex justify-between mt-10">
-              <button
-                onClick={() => setStep(1)}
-                className="px-6 py-3 rounded-lg border border-gray-400"
-              >
-                Back
-              </button>
-
-              <button
-                onClick={() => setStep(3)}
-                className="bg-[#04D9FF] text-black px-10 py-3 rounded-lg shadow-[0_0_15px_#04D9FF]"
-              >
+            <div className="flex justify-end mt-10">
+              <button onClick={handleStep1Next}
+                className="px-10 py-3 rounded-lg text-white font-medium transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#2D5016" }}>
                 Next
               </button>
             </div>
           </div>
         )}
-        {/* ================= STEP 3 ================= */}
-{step === 3 && (
-  <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-md p-12">
 
-    <h2 className="text-3xl font-semibold mb-10">
-      Review & Confirm
-    </h2>
+        {/* STEP 2 */}
+        {step === 2 && (
+          <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-md p-6 md:p-12">
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-2xl font-semibold" style={{ color: "#2D5016" }}>Menu Selection</h2>
+              <button
+                onClick={() => { Cookies.set(COOKIE_STEP, "2", COOKIE_OPTIONS); router.push("/menu"); }}
+                className="px-6 py-3 rounded-full text-white font-medium transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#22420c" }}>
+                + Add Menu Items
+              </button>
+            </div>
 
-    {/* Event Details Summary */}
-    <div className="bg-gray-50 rounded-2xl p-8 mb-10">
-      <h3 className="text-xl font-semibold mb-6">Event Details</h3>
+            {formData.selectedMenu.length === 0 ? (
+              <div className="text-center text-gray-500 py-16 border-2 border-dashed rounded-2xl"
+                style={{ borderColor: "#b5c4a1" }}>
+                <p className="text-lg mb-2">No menu items selected yet</p>
+                <p className="text-sm">Click "Add Menu Items" to browse our menu</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500 mb-4">{formData.selectedMenu.length} item(s) selected</p>
+                {formData.selectedMenu.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between px-5 py-4 rounded-xl border"
+                    style={{ borderColor: "#b5c4a1", backgroundColor: "#F5F0DC" }}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#2D5016" }}></div>
+                      <span className="font-medium" style={{ color: "#2D5016" }}>{item.itemName}</span>
+                      {item.quantity && item.quantity > 1 && (
+                        <span className="text-sm text-gray-500">x {item.quantity}</span>
+                      )}
+                    </div>
+                    <button onClick={() => removeMenuItem(index)}
+                      className="text-red-400 hover:text-red-600 font-bold text-lg transition-colors">✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-      <div className="grid md:grid-cols-2 gap-6 text-gray-700">
-        <div>
-          <p className="font-medium">Event Type:</p>
-          <p>{formData.eventType || "Not selected"}</p>
-
-          <p className="mt-4 font-medium">Guests:</p>
-          <p>{formData.guests || 0} people</p>
-
-          <p className="mt-4 font-medium">Address:</p>
-          <p>{formData.venueAddress || "Not provided"}</p>
-
-          <p className="mt-4 font-medium">Special Requests:</p>
-          <p>{formData.specialRequests || "None"}</p>
-        </div>
-
-        <div>
-          <p className="font-medium">Date & Time:</p>
-          <p>
-            {formData.eventDate || "Not selected"} at{" "}
-            {formData.eventTime || "Not selected"}
-          </p>
-
-          <p className="mt-4 font-medium">Venue:</p>
-          <p>{formData.venueType || "Not selected"}</p>
-        </div>
-      </div>
-    </div>
-
-    {/* Selected Menu */}
-    <div className="bg-gray-50 rounded-2xl p-8 mb-10">
-      <h3 className="text-xl font-semibold mb-6">Selected Menu</h3>
-
-      {formData.selectedMenu.length === 0 ? (
-        <p className="text-gray-500">No menu selected</p>
-      ) : (
-        formData.selectedMenu.map((item, index) => (
-          <div key={index} className="flex justify-between mb-3">
-            <p>{item.itemName} × {item.quantity}</p>
-            <p>₹ {item.price * item.quantity}</p>
+            <div className="flex justify-between mt-10">
+              <button onClick={() => goToStep(1)}
+                className="px-6 py-3 rounded-lg border font-medium transition-colors hover:bg-gray-50"
+                style={{ borderColor: "#2D5016", color: "#2D5016" }}>Back</button>
+              <button onClick={() => goToStep(3)}
+                className="px-10 py-3 rounded-lg text-white font-medium transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#2D5016" }}>Next</button>
+            </div>
           </div>
-        ))
-      )}
-    </div>
+        )}
 
-    {/* Contact Information */}
-    <div className="bg-gray-50 rounded-2xl p-8 mb-10">
-      <h3 className="text-xl font-semibold mb-6">Contact Information</h3>
+        {/* STEP 3 */}
+        {step === 3 && (
+          <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-md p-6 md:p-12">
+            <h2 className="text-3xl font-semibold mb-10" style={{ color: "#2D5016" }}>Review & Confirm</h2>
 
-      <div className="grid md:grid-cols-2 gap-6">
+            <div className="rounded-2xl p-8 mb-10" style={{ backgroundColor: "#F5F0DC" }}>
+              <h3 className="text-xl font-semibold mb-6" style={{ color: "#2D5016" }}>Event Details</h3>
+              <div className="grid md:grid-cols-2 gap-6 text-gray-700">
+                <div>
+                  <p className="font-medium">Event Type:</p><p>{formData.eventType}</p>
+                  <p className="mt-4 font-medium">Guests:</p><p>{formData.guests} people</p>
+                  <p className="mt-4 font-medium">Address:</p><p>{formData.venueAddress}</p>
+                  <p className="mt-4 font-medium">Special Requests:</p><p>{formData.specialRequests}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Date & Time:</p>
+                  <p>{formData.eventDate} at {formData.eventTime}</p>
+                  <p className="mt-4 font-medium">Venue:</p><p>{formData.venueType}</p>
+                </div>
+              </div>
+            </div>
 
-        <div>
-          <label className="block mb-2 text-gray-600">Full Name</label>
-          <input
-            type="text"
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-3"
-          />
-        </div>
+            <div className="rounded-2xl p-8 mb-10" style={{ backgroundColor: "#F5F0DC" }}>
+              <h3 className="text-xl font-semibold mb-6" style={{ color: "#2D5016" }}>Selected Menu</h3>
+              {formData.selectedMenu.length === 0 ? (
+                <p className="text-gray-500">No menu selected</p>
+              ) : (
+                formData.selectedMenu.map((item, index) => (
+                  <div key={index} className="mb-2">
+                    <p className="text-[#3D4F1C] font-medium">
+                      {item.itemName}
+                      {item.quantity && item.quantity > 1 && (
+                        <span className="text-gray-500 font-normal"> x {item.quantity}</span>
+                      )}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
 
-        <div>
-          <label className="block mb-2 text-gray-600">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-3"
-          />
-        </div>
+            <div className="rounded-2xl p-8 mb-10" style={{ backgroundColor: "#F5F0DC" }}>
+              <h3 className="text-xl font-semibold mb-6" style={{ color: "#2D5016" }}>Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div>
+                  <label className="block mb-2 text-gray-600">Full Name <span className="text-red-500">*</span></label>
+                  <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
+                    className="w-full border rounded-lg p-3 focus:outline-none" style={inputStyle("fullName")} />
+                  <ErrorMsg field="fullName" />
+                </div>
+                <div>
+                  <label className="block mb-2 text-gray-600">Email <span className="text-red-500">*</span></label>
+                  <input type="email" name="email" value={formData.email} onChange={handleChange}
+                    className="w-full border rounded-lg p-3 focus:outline-none" style={inputStyle("email")} />
+                  <ErrorMsg field="email" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-gray-600">Phone Number <span className="text-red-500">*</span></label>
+                  <input type="text" name="phone" value={formData.phone} onChange={handleChange}
+                    placeholder="10-digit phone number"
+                    className="w-full border rounded-lg p-3 focus:outline-none" style={inputStyle("phone")} />
+                  <ErrorMsg field="phone" />
+                </div>
+              </div>
+            </div>
 
-        <div className="md:col-span-2">
-          <label className="block mb-2 text-gray-600">Phone Number</label>
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-3"
-          />
-        </div>
-
-      </div>
-    </div>
-
-    <div className="flex justify-between items-center">
-      <button
-        onClick={() => setStep(2)}
-        className="px-6 py-3 rounded-lg border border-gray-400"
-      >
-        Back
-      </button>
-
-      <button
-        onClick={handleSubmit}
-        className="bg-[#04D9FF] text-black px-10 py-3 rounded-lg shadow-[0_0_20px_#04D9FF]"
-      >
-        Submit Booking
-      </button>
-    </div>
-
-  </div>
-)}
-
-        
-
+            <div className="flex justify-between items-center">
+              <button onClick={() => goToStep(2)}
+                className="px-6 py-3 rounded-lg border font-medium transition-colors hover:bg-gray-50"
+                style={{ borderColor: "#2D5016", color: "#2D5016" }}>Back</button>
+              <button onClick={handleStep3Submit}
+                className="px-10 py-3 rounded-lg text-white font-medium transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#2D5016" }}>Submit Booking</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

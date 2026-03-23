@@ -1,41 +1,31 @@
 import mongoose from "mongoose";
 
-// Menu Schema
 const MenuSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Menu item name is required"],
+      required: [true, "Menu name is required"],
       trim: true,
+      minlength: 2,
     },
-    description: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-    price: {
-      type: Number,
-      required: [true, "Price is required"],
-      min: [0, "Price cannot be negative"],
-    },
+
     category: {
       type: String,
-      enum: ["veg", "non-veg", "dessert", "starter"],
-      default: "starter",
+      required: [true, "Category is required"],
+      trim: true,
     },
+
     image: {
       type: String,
-      default: "", // Optional URL
-    },
-    available: {
-      type: Boolean,
-      default: true,
+      default: "",
     },
   },
-  { timestamps: true } // automatically adds createdAt & updatedAt
+  { timestamps: true }
 );
 
-// Hot-reload safe in Next.js dev
-const Menu = mongoose.models.Menu || mongoose.model("Menu", MenuSchema);
+// Index for faster filtering (only category now)
+MenuSchema.index({ category: 1 });
 
-export default Menu;
+// Prevent model overwrite in Next.js
+export default mongoose.models.Menu ||
+  mongoose.model("Menu", MenuSchema);

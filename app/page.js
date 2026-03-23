@@ -9,7 +9,7 @@ export default function Home() {
   const router = useRouter();
 
   const handleBooking = () => {
-    const token = localStorage.getItem("token"); // login ke time jo store kiya ho
+    const token = localStorage.getItem("token");
 
     if (!token) {
       toast.error("Login yourself to book catering service");
@@ -23,7 +23,8 @@ export default function Home() {
     <div className="w-full bg-white">
 
       {/* ================= HERO SECTION ================= */}
-      <div className="relative w-full h-[450px] overflow-hidden">
+      <div className="relative w-full h-[450px] overflow-hidden pt-[120px] md:pt-0">
+        {/* 👆 yahi main fix hai */}
 
         <Image
           src="/home.png"
@@ -36,30 +37,31 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/50" />
 
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center text-white px-6">
-          <h1 className="text-5xl font-bold mb-4">
-            Welcome to <span className="text-yellow-400">Chandani Catering Services</span>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">
+            Welcome to{" "}
+            <span className="text-yellow-400">
+              Chandani Catering Services
+            </span>
           </h1>
 
-          <p className="max-w-xl mb-6 text-gray-200">
+          <p className="max-w-xl mb-6 text-gray-200 text-sm md:text-base">
             Premium catering services for weddings, parties,
             corporate events, and special occasions.
           </p>
 
           <div className="flex gap-4">
             <Link href="/menu">
-              <button className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold">
+              <button className="bg-[#6B8E23] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#556B2F] transition">
                 View Menu
               </button>
             </Link>
 
-            {/* 🔥 Updated Book Now Button */}
             <button
               onClick={handleBooking}
               className="border border-white px-6 py-3 rounded-lg hover:bg-white hover:text-black transition"
             >
               Book Now
             </button>
-
           </div>
         </div>
 
@@ -75,7 +77,7 @@ export default function Home() {
         </svg>
       </div>
 
-      {/* ================= INTRODUCTION SECTION ================= */}
+      {/* ================= INTRO SECTION ================= */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 items-center">
 
@@ -86,7 +88,6 @@ export default function Home() {
                 alt="Indian spices"
                 fill
                 className="object-contain"
-                sizes="400px"
               />
             </div>
           </div>
@@ -96,11 +97,11 @@ export default function Home() {
               INTRODUCTION
             </p>
 
-            <h2 className="text-4xl font-bold mb-6 text-gray-900">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
               Indian Vegetarian Catering
             </h2>
 
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
               We at CHANDANI CATERIN SERVICE pride ourselves in providing quality service and
               creating mouth-watering pure vegetarian cuisine.
               <br /><br />
@@ -117,7 +118,6 @@ export default function Home() {
                 alt="Indian spices"
                 fill
                 className="object-contain"
-                sizes="400px"
               />
             </div>
           </div>

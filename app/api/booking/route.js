@@ -4,11 +4,30 @@ import Booking from "../../../models/Booking";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 
+// ================= GET BOOKINGS =================
+
+export async function GET() {
+  try {
+    await connectDB();
+
+    const bookings = await Booking.find().sort({ createdAt: -1 });
+
+    return NextResponse.json(bookings, { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Error fetching bookings" },
+      { status: 500 }
+    );
+  }
+}
+
+// ================= CREATE BOOKING =================
+
 export async function POST(req) {
   try {
     await connectDB();
 
-    // 🔹 Check Authorization Header
     const authHeader = req.headers.get("authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -21,6 +40,7 @@ export async function POST(req) {
     const token = authHeader.split(" ")[1];
 
     let decoded;
+
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
@@ -47,7 +67,6 @@ export async function POST(req) {
       phone,
     } = body;
 
-    // 🔹 Basic validation
     if (
       !eventType ||
       !eventDate ||
@@ -65,9 +84,8 @@ export async function POST(req) {
       );
     }
 
-    // 🔹 Create Booking
     const newBooking = await Booking.create({
-      userId: decoded.userId || decoded.id, // safe handling
+      userId: decoded.userId || decoded.id,
       eventType,
       eventDate,
       eventTime,
@@ -83,7 +101,7 @@ export async function POST(req) {
       status: "pending",
     });
 
-    // ================= EMAIL SENDING =================
+    // ================= EMAIL =================
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -113,8 +131,6 @@ export async function POST(req) {
       `,
     });
 
-    // =================================================
-
     return NextResponse.json(
       { message: "Booking saved successfully", booking: newBooking },
       { status: 201 }
@@ -122,6 +138,7 @@ export async function POST(req) {
 
   } catch (error) {
     console.error(error);
+
     return NextResponse.json(
       { message: "Server Error" },
       { status: 500 }

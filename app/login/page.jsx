@@ -33,7 +33,6 @@ const themes = {
     toggleBg: "rgba(10,10,30,0.50)",
     toggleBorder: "rgba(255,255,255,0.22)",
     toggleColor: "#fff",
-    // dark mode: no filter needed, logo shows fine
     logoFilter: "drop-shadow(0 8px 28px rgba(0,0,0,0.5))",
     logoBgWrap: "transparent",
   },
@@ -62,7 +61,6 @@ const themes = {
     toggleBg: "rgba(255,255,255,0.75)",
     toggleBorder: "rgba(99,102,241,0.28)",
     toggleColor: "#1e1b4b",
-    // light mode: invert + hue to make logo dark/visible, plus colored shadow
     logoFilter: "drop-shadow(0 8px 24px rgba(99,102,241,0.35)) brightness(0.15) sepia(1) hue-rotate(200deg) saturate(4)",
     logoBgWrap: "transparent",
   },
@@ -177,7 +175,6 @@ function FloatingField({ label, icon, type = "text", value, onChange, step, them
           overflow: "hidden",
         }}
       >
-        {/* Shimmer sweep on focus */}
         {focused && (
           <motion.div
             initial={{ x: "-100%" }}
@@ -415,10 +412,9 @@ export default function LoginPage() {
               animate={{ opacity: 1, y: 0, rotate: 0, scale: 1 }}
               transition={{
                 duration: 0.8,
-                ease: [0.34, 1.56, 0.64, 1],   // springy bounce
+                ease: [0.34, 1.56, 0.64, 1],
                 delay: 0.1,
               }}
-              // gentle float loop after landing
               whileInView={{ y: 0 }}
               style={{ display: "inline-block" }}
             >
@@ -428,14 +424,12 @@ export default function LoginPage() {
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               >
                 <Image
-                  src="/Flogo2.svg"
+                  src="/logo.svg"
                   alt="Chandani Catering Logo"
                   width={200}
                   height={200}
                   style={{
                     objectFit: "contain",
-                    // ✅ Dark mode: nice glow shadow
-                    // ✅ Light mode: darken/colorize so it's visible on light bg
                     filter: t.logoFilter,
                     transition: "filter 0.4s ease",
                   }}
@@ -536,8 +530,35 @@ export default function LoginPage() {
             }}>Create one</Link>
           </motion.p>
 
+          {/* ── Admin Login Link ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.65 }}
+            style={{ textAlign: "center", marginTop: "10px" }}
+          >
+            <span style={{ fontSize: "13px", color: t.footerText, transition: "color 0.3s" }}>
+              Login as Admin{" "}
+            </span>
+            <Link
+              href="/admin/login"
+              style={{
+                color: t.linkColor,
+                fontWeight: 700,
+                textDecoration: "none",
+                borderBottom: `1.5px solid ${t.linkColor}55`,
+                paddingBottom: "1px",
+                fontSize: "13px",
+                transition: "color 0.3s",
+              }}
+            >
+              Admin Login
+            </Link>
+          </motion.div>
+
         </div>
       </motion.div>
+      
     </div>
   );
 }
@@ -556,7 +577,7 @@ const css = `
 
   input:-webkit-autofill {
     -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
-    -webkit-text-fill-color: inherit !important;npm
+    -webkit-text-fill-color: inherit !important;
     transition: background-color 5000s;
   }
   input::placeholder { color: transparent; }
