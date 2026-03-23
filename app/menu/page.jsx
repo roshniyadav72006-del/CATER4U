@@ -12,6 +12,7 @@ export default function MenuPage() {
   const [filteredMenus, setFilteredMenus] = useState([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [cart, setCart] = useState([]);
+  const [search, setSearch] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -28,21 +29,50 @@ export default function MenuPage() {
     fetchMenus();
   }, []);
 
+  // 🔍 SEARCH
+  const handleSearch = (value) => {
+    setSearch(value);
+
+    let filtered = menus;
+
+    if (activeCategory !== "All") {
+      filtered = filtered.filter((item) => item.category === activeCategory);
+    }
+
+    filtered = filtered.filter((item) =>
+      item.name.toLowerCase().includes(value.toLowerCase())
+    );
+
+    setFilteredMenus(filtered);
+  };
+
+  // 📂 CATEGORY
   const handleCategory = (category) => {
     setActiveCategory(category);
-    if (category === "All") {
-      setFilteredMenus(menus);
-    } else {
-      setFilteredMenus(menus.filter((item) => item.category === category));
+
+    let filtered = menus;
+
+    if (category !== "All") {
+      filtered = filtered.filter((item) => item.category === category);
     }
+
+    if (search) {
+      filtered = filtered.filter((item) =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    setFilteredMenus(filtered);
   };
 
   const addToOrder = (item) => {
     const existing = cart.find((c) => c._id === item._id);
     if (existing) {
-      setCart(cart.map((c) =>
-        c._id === item._id ? { ...c, quantity: c.quantity + 1 } : c
-      ));
+      setCart(
+        cart.map((c) =>
+          c._id === item._id ? { ...c, quantity: c.quantity + 1 } : c
+        )
+      );
     } else {
       setCart([...cart, { ...item, quantity: 1 }]);
     }
@@ -53,7 +83,6 @@ export default function MenuPage() {
   };
 
   const goToBooking = () => {
-    // ✅ Cookie se existing items lo aur naye items ke saath merge karo
     const existingMenu = JSON.parse(Cookies.get(COOKIE_MENU) || "[]");
 
     const newItems = cart.map((item) => ({
@@ -62,14 +91,14 @@ export default function MenuPage() {
       quantity: item.quantity,
     }));
 
-    // Duplicate check: same _id → quantity add karo, naya → push karo
     const mergedMenu = [...existingMenu];
     newItems.forEach((newItem) => {
       const idx = mergedMenu.findIndex((e) => e._id === newItem._id);
       if (idx !== -1) {
         mergedMenu[idx] = {
           ...mergedMenu[idx],
-          quantity: (mergedMenu[idx].quantity || 1) + newItem.quantity,
+          quantity:
+            (mergedMenu[idx].quantity || 1) + newItem.quantity,
         };
       } else {
         mergedMenu.push(newItem);
@@ -83,7 +112,7 @@ export default function MenuPage() {
   return (
     <div className="min-h-screen bg-[#F5E6B3] pb-40">
 
-      {/* HERO SECTION */}
+      {/* HERO */}
       <div
         className="relative h-[400px] w-full flex items-center justify-center text-center"
         style={{
@@ -93,10 +122,12 @@ export default function MenuPage() {
           backgroundPosition: "center",
         }}
       >
-        <h1 className="text-4xl md:text-5xl font-bold text-white">Our Menu</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-white">
+          Our Menu
+        </h1>
       </div>
 
-      {/* CATEGORY BUTTONS */}
+      {/* CATEGORY */}
       <div className="flex flex-wrap justify-center gap-4 mt-10 px-5">
         {["All", "Starter", "Main Course", "Dessert"].map((cat) => (
           <button
@@ -113,39 +144,76 @@ export default function MenuPage() {
         ))}
       </div>
 
-      {/* MENU GRID */}
-      <div className="p-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl">
-          {filteredMenus.map((item) => (
-            <div
-              key={item._id}
-              className="shadow-md rounded-xl p-4 bg-white hover:shadow-xl transition duration-300"
-            >
-              {item.image && (
-                <img src={item.image} alt={item.name}
-                  className="h-48 w-full object-cover rounded-lg mb-3" />
-              )}
-              <h2 className="text-lg font-bold text-[#3D4F1C]">{item.name}</h2>
-              <p className="text-gray-600 text-sm mb-3">{item.category}</p>
+      {/* 🔍 SEARCH BAR */}
+      <div className="px-6 mt-6 flex justify-center">
+        <div className="w-full max-w-2xl relative">
 
-              <button
-                onClick={() => addToOrder(item)}
-                className={`px-3 py-2 rounded w-full text-sm font-semibold transition ${
-                  cart.find((c) => c._id === item._id)
-                    ? "bg-[#3D4F1C] text-white"
-                    : "bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37]"
-                }`}
-              >
-                {cart.find((c) => c._id === item._id)
-                  ? `Added (${cart.find((c) => c._id === item._id).quantity})`
-                  : "Add to Order"}
-              </button>
-            </div>
-          ))}
+          <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl">
+            🔍
+          </span>
+
+          <input
+            type="text"
+            placeholder="Search Paneer, Biryani, Dessert..."
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-[#556B2F] focus:outline-none focus:ring-2 focus:ring-[#556B2F] bg-white"
+          />
+
         </div>
       </div>
 
-      {/* CART SECTION */}
+      {/* MENU GRID */}
+      <div className="p-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-6 pl-4 pr-2">
+
+          {filteredMenus.length > 0 ? (
+            filteredMenus.map((item) => (
+              <div
+                key={item._id}
+                className="shadow-md rounded-xl p-4 bg-white hover:shadow-xl transition duration-300 w-full"
+              >
+                {item.image && (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="h-48 w-full object-cover rounded-lg mb-3"
+                  />
+                )}
+
+                <h2 className="text-lg font-bold text-[#3D4F1C]">
+                  {item.name}
+                </h2>
+                <p className="text-gray-600 text-sm mb-3">
+                  {item.category}
+                </p>
+
+                <button
+                  onClick={() => addToOrder(item)}
+                  className={`px-3 py-2 rounded w-full text-sm font-semibold transition ${
+                    cart.find((c) => c._id === item._id)
+                      ? "bg-[#3D4F1C] text-white"
+                      : "bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37]"
+                  }`}
+                >
+                  {cart.find((c) => c._id === item._id)
+                    ? `Added (${
+                        cart.find((c) => c._id === item._id).quantity
+                      })`
+                    : "Add to Order"}
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="col-span-full text-center text-gray-600">
+              No items found 😔
+            </p>
+          )}
+
+        </div>
+      </div>
+
+      {/* CART */}
       {cart.length > 0 && (
         <div className="fixed bottom-0 left-0 w-full bg-white shadow-2xl p-6 border-t border-[#556B2F]">
           <h2 className="font-bold mb-3 text-[#3D4F1C]">
@@ -153,16 +221,23 @@ export default function MenuPage() {
           </h2>
           <div className="flex flex-wrap gap-3">
             {cart.map((item) => (
-              <div key={item._id}
-                className="bg-[#F5E6B3] px-4 py-2 rounded flex items-center gap-3">
+              <div
+                key={item._id}
+                className="bg-[#F5E6B3] px-4 py-2 rounded flex items-center gap-3"
+              >
                 <span className="font-medium text-[#3D4F1C]">
                   {item.name} x {item.quantity}
                 </span>
-                <button onClick={() => removeItem(item._id)}
-                  className="text-red-500 font-bold">✕</button>
+                <button
+                  onClick={() => removeItem(item._id)}
+                  className="text-red-500 font-bold"
+                >
+                  ✕
+                </button>
               </div>
             ))}
           </div>
+
           <button
             onClick={goToBooking}
             className="mt-4 bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] px-6 py-3 rounded font-semibold transition"

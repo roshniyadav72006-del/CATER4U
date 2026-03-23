@@ -324,6 +324,9 @@ export default function BookingPage() {
                   <option value="">Select venue</option>
                   <option>Indoor</option>
                   <option>Outdoor</option>
+                  <option>Home/Residence</option>
+                  <option>Office/Corporate</option>
+                  
                 </select>
                 <ErrorMsg field="venueType" />
               </div>
