@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import connectDB from "../../../../lib/mongoose";
-import Event from "../../../../models/Event";
+import connectDB from "../../../../../lib/mongoose";
+import Event from "../../../../../models/Event";
 // ================= UPDATE EVENT =================
 export async function PUT(req, { params }) {
   try {
