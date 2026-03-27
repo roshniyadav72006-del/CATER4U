@@ -357,6 +357,7 @@ export default function LoginPage() {
           src="/about-bg.jpg"
           alt="Chandani Catering hero"
           fill priority
+          
           style={{ objectFit: "cover", objectPosition: "center" }}
         />
       </div>

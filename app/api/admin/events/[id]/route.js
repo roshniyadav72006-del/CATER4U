@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "../../../../../lib/mongoose";
 import Event from "../../../../../models/Event";
+
 // ================= UPDATE EVENT =================
 export async function PUT(req, { params }) {
   try {
@@ -9,11 +10,9 @@ export async function PUT(req, { params }) {
     const { id } = params;
     const body = await req.json();
 
-    const updatedEvent = await Event.findByIdAndUpdate(
-      id,
-      body,
-      { new: true }
-    );
+    const updatedEvent = await Event.findByIdAndUpdate(id, body, {
+      new: true,
+    });
 
     if (!updatedEvent) {
       return NextResponse.json(

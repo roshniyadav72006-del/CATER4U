@@ -15,17 +15,30 @@ export default function CreateMenuPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("category", form.category);
-    if (form.image) formData.append("image", form.image);
+    try {
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("category", form.category);
+      if (form.image) formData.append("image", form.image);
 
-    await fetch("/api/admin/menu", {
-      method: "POST",
-      body: formData,
-    });
+      const res = await fetch("/api/admin/menu", {
+        method: "POST",
+        body: formData,
+      });
 
-    router.push("/admin/menu");
+      if (!res.ok) {
+        throw new Error("Failed to create menu");
+      }
+
+      // reset form (optional but pro)
+      setForm({ name: "", category: "", image: null });
+
+      router.push("/admin/menu");
+
+    } catch (error) {
+      console.error(error);
+      alert("Error creating menu");
+    }
   };
 
   return (
@@ -42,15 +55,16 @@ export default function CreateMenuPage() {
             type="text"
             placeholder="Menu Name"
             required
+            value={form.name}
             className="border border-[#556B2F] focus:ring-2 focus:ring-[#D4AF37] outline-none p-3 w-full rounded"
             onChange={(e) =>
               setForm({ ...form, name: e.target.value })
             }
           />
 
-          {/* Category Dropdown */}
           <select
             required
+            value={form.category}
             className="border border-[#556B2F] focus:ring-2 focus:ring-[#D4AF37] outline-none p-3 w-full rounded bg-white"
             onChange={(e) =>
               setForm({ ...form, category: e.target.value })
@@ -72,21 +86,20 @@ export default function CreateMenuPage() {
             }
           />
 
-          {/* Buttons Row */}
           <div className="flex gap-4">
-         <button
-         type="submit"
-          className="w-1/2 bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold py-3 rounded-lg transition shadow"  >
-          Save Menu
-         </button>
-
-          <button
-           type="button"
-            onClick={() => router.push("/admin/menu")}
-             className="w-1/2 bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold py-3 rounded-lg transition shadow">
-             Cancel
+            <button
+              type="submit"
+              className="w-1/2 bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold py-3 rounded-lg transition shadow">
+              Save Menu
             </button>
-            </div>
+
+            <button
+              type="button"
+              onClick={() => router.push("/admin/menu")}
+              className="w-1/2 bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold py-3 rounded-lg transition shadow">
+              Cancel
+            </button>
+          </div>
 
         </form>
       </div>
