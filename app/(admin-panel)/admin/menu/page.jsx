@@ -56,6 +56,16 @@ export default function AdminMenuPage() {
           <option value="Main Course">Main Course</option>
           <option value="Dessert">Dessert</option>
           <option value="Beverages">Beverages</option>
+          <option value="Nasta">Nasta</option>
+            <option value="Rajasthani Special">Rajasthani Special</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Indian Breads">Indian Breads</option>
+            <option value="Dal">Dal</option>
+            <option value="Basmati ki Khushbu">Basmati ki Khushbu</option>
+            <option value="Mumbai Favourite">Mumbai Favourite</option>
+            <option value="Paneer Dishes">Paneer Dishes</option>
+            <option value="Paneer Rice">Paneer Rice</option>
+
         </select>
       </div>
 
@@ -71,8 +81,6 @@ export default function AdminMenuPage() {
         <tbody className="bg-white">
           {filteredMenus.map((m) => (
             <tr key={m._id} className="border-t hover:bg-[#F5E6B3] transition">
-              
-              {/* ✅ IMAGE SHOW */}
               <td className="p-3">
                 {m.image && (
                   <img

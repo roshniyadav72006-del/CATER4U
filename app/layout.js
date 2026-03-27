@@ -42,10 +42,10 @@ export default function RootLayout({ children }) {
           {children}
         </main>
 
-        {/* ❌ Footer hide only on profile */}
+        
         {!hideFooter && !hideLayout && <Footer />}
 
-        {/* ✅ Chatbot remains same as before */}
+        
         {!hideLayout && <AIChatbot />}
 
         <Toaster position="top-right" richColors expand closeButton />

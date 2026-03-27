@@ -82,15 +82,15 @@ export default function Navbar() {
       >
        <Link href="/">
        <Image
-  src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555385/Logo_z7wsgh.svg"
-  alt="Logo"
-  width={120}
-  height={120}
-  style={{ width: "auto", height: scrolled ? 56 : 112 }}
-  className="logo-img transition-all duration-300"
-  loading="eager"
-  priority
-/>
+         src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555385/Logo_z7wsgh.svg"
+         alt="Logo"
+         width={120}
+          height={120}
+            style={{ width: "auto", height: scrolled ? 56 : 112 }}
+           className="logo-img transition-all duration-300"
+           loading="eager"
+           priority
+          />
         </Link>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -249,14 +250,27 @@ export default function RegisterPage() {
           {/* Header */}
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }} style={{ textAlign: "center", marginBottom: "28px" }}>
-            <div style={{
-              width: "64px", height: "64px", borderRadius: "20px",
-              background: "rgba(255,255,255,0.12)",
-              border: "1.5px solid rgba(255,255,255,0.2)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "28px", margin: "0 auto 14px",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            }}>🍽️</div>
+            <div
+  style={{
+    width: "90px",
+    height: "90px",
+    borderRadius: "20px",
+    background: "rgba(255,255,255,0.12)",
+    border: "1.5px solid rgba(255,255,255,0.2)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 auto 14px",
+  }}
+> <Image
+  src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555385/Logo_z7wsgh.svg"
+  alt="Logo"
+  sizes="100vw"
+  width={0}
+  height={0}
+  style={{ width: "80px", height: "auto" }}
+  priority
+/></div>
             <h1 style={{ margin: 0, fontSize: "28px", fontWeight: 800, color: "#fff", letterSpacing: "-0.5px" }}>
               Chandani Catering Services
             </h1>
@@ -296,7 +310,7 @@ export default function RegisterPage() {
             <FloatingField label="Phone Number" icon="📱" type="tel" value={phone} step={5}
               onChange={(e) => setPhone(e.target.value)} />
 
-            <FloatingField label="Delivery Address" icon="📍" value={address} step={6}
+            <FloatingField label="Your Address" icon="📍" value={address} step={6}
               onChange={(e) => setAddress(e.target.value)} />
 
             {/* Submit */}

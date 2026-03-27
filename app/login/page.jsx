@@ -425,7 +425,7 @@ export default function LoginPage() {
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               >
                 <Image
-                  src="/logo.svg"
+                  src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555385/Logo_z7wsgh.svg"
                   alt="Chandani Catering Logo"
                   width={200}
                   height={200}

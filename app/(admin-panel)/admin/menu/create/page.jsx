@@ -74,7 +74,17 @@ export default function CreateMenuPage() {
             <option value="Starter">Starter</option>
             <option value="Main Course">Main Course</option>
             <option value="Dessert">Dessert</option>
-            <option value="Beverages">Beverages</option>
+            <option value="Nasta">Nasta</option>
+            <option value="Rajasthani Special">Rajasthani Special</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Indian Breads">Indian Breads</option>
+            <option value="Dal">Dal</option>
+            <option value="Basmati ki Khushbu">Basmati ki Khushbu</option>
+            <option value="Mumbai Favourite">Mumbai Favourite</option>
+            <option value="Paneer Dishes">Paneer Dishes</option>
+            <option value="Paneer Rice">Paneer Rice</option>
+           <option value="Beverages">Beverages</option>
+
           </select>
 
           <input

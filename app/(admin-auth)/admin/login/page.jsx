@@ -102,7 +102,7 @@ export default function AdminLoginPage() {
                 animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Image src="/logo.svg" alt="Logo" width={64} height={64} className="al-logo-img" />
+                <Image src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555385/Logo_z7wsgh.svg" alt="Logo" width={64} height={64} className="al-logo-img" />
               </motion.div>
             </motion.div>
 
