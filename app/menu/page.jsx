@@ -15,54 +15,55 @@ export default function MenuPage() {
   const [search, setSearch] = useState("");
   const router = useRouter();
 
+  // ✅ FETCH MENU (SAFE)
   useEffect(() => {
     const fetchMenus = async () => {
       try {
         const res = await fetch("/api/menu");
         const data = await res.json();
-        setMenus(data);
-        setFilteredMenus(data);
+
+        // ✅ Ensure array
+        const menuArray = Array.isArray(data) ? data : [];
+
+        setMenus(menuArray);
+        setFilteredMenus(menuArray);
       } catch (error) {
         console.error("Menu fetch error:", error);
+        setMenus([]);
+        setFilteredMenus([]);
       }
     };
+
     fetchMenus();
   }, []);
 
-  // 🔍 SEARCH
-  const handleSearch = (value) => {
-    setSearch(value);
-
-    let filtered = menus;
-
-    if (activeCategory !== "All") {
-      filtered = filtered.filter((item) => item.category === activeCategory);
-    }
-
-    filtered = filtered.filter((item) =>
-      item.name.toLowerCase().includes(value.toLowerCase())
-    );
-
-    setFilteredMenus(filtered);
-  };
-
-  // 📂 CATEGORY
-  const handleCategory = (category) => {
-    setActiveCategory(category);
-
-    let filtered = menus;
+  // 🔥 COMMON FILTER FUNCTION (BEST PRACTICE)
+  const applyFilters = (category, searchText) => {
+    let filtered = Array.isArray(menus) ? menus : [];
 
     if (category !== "All") {
       filtered = filtered.filter((item) => item.category === category);
     }
 
-    if (search) {
+    if (searchText) {
       filtered = filtered.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+        item.name.toLowerCase().includes(searchText.toLowerCase())
       );
     }
 
     setFilteredMenus(filtered);
+  };
+
+  // 🔍 SEARCH
+  const handleSearch = (value) => {
+    setSearch(value);
+    applyFilters(activeCategory, value);
+  };
+
+  // 📂 CATEGORY
+  const handleCategory = (category) => {
+    setActiveCategory(category);
+    applyFilters(category, search);
   };
 
   const addToOrder = (item) => {
@@ -92,6 +93,7 @@ export default function MenuPage() {
     }));
 
     const mergedMenu = [...existingMenu];
+
     newItems.forEach((newItem) => {
       const idx = mergedMenu.findIndex((e) => e._id === newItem._id);
       if (idx !== -1) {
@@ -114,7 +116,7 @@ export default function MenuPage() {
 
       {/* HERO */}
       <div
-        className="relative h-[400px] w-full flex items-center justify-center text-center"
+        className="relative h-[400px] w-full flex flex-col items-center justify-center text-center gap-4"
         style={{
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/bann.jpeg')",
@@ -125,6 +127,21 @@ export default function MenuPage() {
         <h1 className="text-4xl md:text-5xl font-bold text-white">
           Our Menu
         </h1>
+
+        {/* SEARCH */}
+        <div className="w-full max-w-xl px-4 relative">
+          <span className="absolute left-6 top-1/2 transform -translate-y-1/2 text-xl">
+            🔍
+          </span>
+
+          <input
+            type="text"
+            placeholder="Search Paneer, Biryani, Dessert..."
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-white bg-white text-black focus:outline-none"
+          />
+        </div>
       </div>
 
       {/* CATEGORY */}
@@ -142,25 +159,6 @@ export default function MenuPage() {
             {cat}
           </button>
         ))}
-      </div>
-
-      {/* 🔍 SEARCH BAR */}
-      <div className="px-6 mt-6 flex justify-center">
-        <div className="w-full max-w-2xl relative">
-
-          <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl">
-            🔍
-          </span>
-
-          <input
-            type="text"
-            placeholder="Search Paneer, Biryani, Dessert..."
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-[#556B2F] focus:outline-none focus:ring-2 focus:ring-[#556B2F] bg-white"
-          />
-
-        </div>
       </div>
 
       {/* MENU GRID */}
@@ -219,6 +217,7 @@ export default function MenuPage() {
           <h2 className="font-bold mb-3 text-[#3D4F1C]">
             Selected Items ({cart.length})
           </h2>
+
           <div className="flex flex-wrap gap-3">
             {cart.map((item) => (
               <div

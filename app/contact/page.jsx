@@ -23,8 +23,8 @@ export default function ContactPage() {
                 <Phone className="text-[#556B2F]" />
                 <div>
                   <p className="text-gray-500">Phone</p>
-                  <a href="tel:+919876543210" className="font-medium">
-                    +91 98765 43210
+                  <a href="tel:+917977419874" className="font-medium">
+                    +91 79774 19874
                   </a>
                 </div>
               </div>
@@ -34,9 +34,13 @@ export default function ContactPage() {
                 <Mail className="text-[#556B2F]" />
                 <div>
                   <p className="text-gray-500">Email</p>
-                  <a href="mailto:info@chandanicateringservices.com" className="font-medium">
-                    info@chandanicateringservices.com
+                  <a
+                     href="https://mail.google.com/mail/?view=cm&to=cater4u2025@gmail.com&su=Booking%20Inquiry&body=Hello%2C%20I%20want%20to%20book%20catering%20service"
+                     target="_blank"
+                    >
+                    cater4u2025@gmail.com
                   </a>
+                  
                 </div>
               </div>
 
@@ -63,14 +67,14 @@ export default function ContactPage() {
             {/* ACTION BUTTONS */}
             <div className="flex gap-4 mt-8">
               <a
-                href="tel:+919876543210"
+                href="tel:+9917977419874"
                 className="bg-[#556B2F] text-white px-5 py-2 rounded-lg"
               >
                 Call Now
               </a>
 
               <a
-                href="https://wa.me/919876543210"
+                href="https://wa.me/917977419874"
                 className="bg-green-500 text-white px-5 py-2 rounded-lg"
               >
                 WhatsApp
@@ -123,12 +127,7 @@ export default function ContactPage() {
               Open in Google Maps
             </a>
 
-            {/* MINI GALLERY */}
-            <div className="grid grid-cols-3 gap-3 mt-6">
-              <img src="/food1.jpg" className="rounded-lg object-cover h-24 w-full"/>
-              <img src="/food2.jpg" className="rounded-lg object-cover h-24 w-full"/>
-              <img src="/food3.jpg" className="rounded-lg object-cover h-24 w-full"/>
-            </div>
+            
 
           </div>
 

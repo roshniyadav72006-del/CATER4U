@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import BookingsModal from "../../components/BookingsModal"; // ← apna path check karo
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [toast, setToast] = useState(null); // { msg, type: 'success'|'error' }
+  const [toast, setToast] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
-  const [activeTab, setActiveTab] = useState("info");
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showBookingsModal, setShowBookingsModal] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -20,6 +24,14 @@ export default function ProfilePage() {
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
+  };
+  const fetchBookings = async () => {
+      const userId = localStorage.getItem("userId");
+      const res = await fetch("/api/booking", {
+         headers: { userid: userId },
+      });
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {
@@ -39,40 +51,38 @@ export default function ProfilePage() {
       })
       .catch(() => showToast("Failed to load profile", "error"));
 
-    fetch("/api/booking", { headers: { userid: userId } })
-      .then((res) => res.json())
-      .then((data) => setOrders(data))
-      .catch(() => {});
+    fetchBookings(); 
   }, []);
 
   const handleSave = async () => {
     const userId = localStorage.getItem("userId");
     const updatedData = { ...formData, image: previewImage };
-
-    // ✅ Optimistic update — UI turant change ho jaata hai
     setUser((prev) => ({ ...prev, ...formData, image: previewImage }));
     setIsEditing(false);
     setIsSaving(true);
-
     try {
       const res = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json", userid: userId },
         body: JSON.stringify(updatedData),
       });
-
       if (!res.ok) throw new Error("Server error");
-
       const data = await res.json();
-      setUser(data); // server response se confirm update
+      setUser(data);
       showToast("Profile updated successfully! ✓", "success");
-    } catch (err) {
-      // Revert agar API fail ho
+    } catch {
       showToast("Failed to save. Please try again.", "error");
-      setIsEditing(true); // editing mode back
+      setIsEditing(true);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("token");
+    showToast("Logged out successfully. Goodbye! 👋", "success");
+    setTimeout(() => router.push("/login"), 1200);
   };
 
   if (!user)
@@ -84,35 +94,63 @@ export default function ProfilePage() {
       </div>
     );
 
-  const completed = orders.filter((o) => o.status === "Completed").length;
-  const pending = orders.filter((o) => o.status === "Pending").length;
-  const completionRate = orders.length ? Math.round((completed / orders.length) * 100) : 0;
+  const completed = orders.filter(
+    (o) => o.status === "Completed" || o.status === "completed"
+  ).length;
+  const pending = orders.filter(
+    (o) => o.status === "pending" || o.status === "Pending"
+  ).length;
+  const completionRate = orders.length
+    ? Math.round((completed / orders.length) * 100)
+    : 0;
 
   return (
     <div style={styles.page}>
       <style>{globalCSS}</style>
 
-      {/* Background decoration */}
-      <div style={styles.bgBlob1}></div>
-      <div style={styles.bgBlob2}></div>
+      <div style={styles.bgBlob1} />
+      <div style={styles.bgBlob2} />
 
       {/* ── TOAST ── */}
       {toast && (
-        <div style={{
-          ...styles.toast,
-          background: toast.type === "success" ? "#0f172a" : "#dc2626",
-        }}>
+        <div style={{ ...styles.toast, background: toast.type === "success" ? "#0f172a" : "#dc2626" }}>
           <span>{toast.type === "success" ? "✅" : "❌"}</span>
           <span>{toast.msg}</span>
         </div>
+      )}
+
+      {/* ── LOGOUT CONFIRM MODAL ── */}
+      {showLogoutConfirm && (
+        <div style={styles.modalBackdrop} onClick={() => setShowLogoutConfirm(false)}>
+          <div style={styles.logoutModal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalIcon}>🚪</div>
+            <h3 style={styles.modalTitle}>Do you want to logout?</h3>
+            <div style={styles.modalBtns}>
+              <button style={styles.modalCancelBtn} onClick={() => setShowLogoutConfirm(false)}>NO</button>
+              <button style={styles.modalLogoutBtn} onClick={handleLogout}>YES</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── BOOKINGS MODAL (separate component) ── */}
+      {showBookingsModal && (
+        <BookingsModal
+          orders={orders}
+          onClose={() => {
+            setShowBookingsModal(false);
+            fetchBookings();
+          }}
+          onCancelSuccess={fetchBookings}
+
+        />
       )}
 
       <div style={styles.container}>
 
         {/* ── HERO CARD ── */}
         <div style={styles.heroCard} className="hero-card">
-          {/* Decorative stripe */}
-          <div style={styles.heroStripe}></div>
+          <div style={styles.heroStripe} />
 
           <div style={styles.heroContent}>
             {/* Avatar */}
@@ -125,13 +163,11 @@ export default function ProfilePage() {
               {isEditing && (
                 <>
                   <div style={styles.avatarOverlay} className="avatar-overlay">
-                    <span style={styles.cameraIcon}>📷</span>
-                    <span style={styles.changeText}>Change</span>
+                    <span style={{ fontSize: "20px" }}>📷</span>
+                    <span style={{ fontSize: "10px", color: "#fff", fontWeight: 600 }}>Change</span>
                   </div>
                   <input
-                    type="file"
-                    accept="image/*"
-                    style={styles.fileInput}
+                    type="file" accept="image/*" style={styles.fileInput}
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
@@ -143,18 +179,16 @@ export default function ProfilePage() {
                   />
                 </>
               )}
-              <div style={styles.onlineDot}></div>
+              <div style={styles.onlineDot} />
             </div>
 
             {/* Identity */}
             <div style={styles.identity}>
               {isEditing ? (
                 <input
-                  type="text"
-                  value={formData.username}
+                  type="text" value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  style={styles.nameInput}
-                  placeholder="Your name"
+                  style={styles.nameInput} placeholder="Your name"
                 />
               ) : (
                 <h1 style={styles.name}>{user.username}</h1>
@@ -170,38 +204,49 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Edit Button */}
-            <button
-              onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-              style={isEditing ? styles.saveBtn : styles.editBtn}
-              className="action-btn"
-              disabled={isSaving}
-            >
-              {isSaving
-                ? <span style={styles.savingRow}><span className="btn-spinner"></span> Saving…</span>
-                : isEditing
-                ? "✓ Save Changes"
-                : "✎ Edit Profile"}
-            </button>
+            {/* Action Buttons */}
+            <div style={styles.actionBtns}>
+              <button
+                onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+                style={isEditing ? styles.saveBtn : styles.editBtn}
+                className="action-btn" disabled={isSaving}
+              >
+                {isSaving
+                  ? <span style={{ display: "flex", alignItems: "center", gap: "8px" }}><span className="btn-spinner" /> Saving…</span>
+                  : isEditing ? "✓ Save Changes" : "✎ Edit Profile"}
+              </button>
+              {!isEditing && (
+                <button
+                  onClick={() => setShowLogoutConfirm(true)}
+                  style={styles.logoutBtn} className="action-btn logout-btn"
+                >
+                  <span style={{ fontSize: "16px" }}>⏻</span> Logout
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Stats bar */}
+          {/* ── STATS BAR ── */}
           <div style={styles.statsBar}>
-            <div style={styles.statItem}>
+            <div
+              style={{ ...styles.statItem, cursor: "pointer" }}
+              className="stat-clickable"
+              onClick={() => setShowBookingsModal(true)}
+            >
               <span style={styles.statNumber}>{orders.length}</span>
-              <span style={styles.statLabel}>Total Bookings</span>
+              <span style={{ ...styles.statLabel, color: "#6366f1" }}>Total Bookings ↗</span>
             </div>
-            <div style={styles.statDivider}></div>
+            <div style={styles.statDivider} />
             <div style={styles.statItem}>
               <span style={{ ...styles.statNumber, color: "#22c55e" }}>{completed}</span>
               <span style={styles.statLabel}>Completed</span>
             </div>
-            <div style={styles.statDivider}></div>
+            <div style={styles.statDivider} />
             <div style={styles.statItem}>
               <span style={{ ...styles.statNumber, color: "#f59e0b" }}>{pending}</span>
               <span style={styles.statLabel}>Pending</span>
             </div>
-            <div style={styles.statDivider}></div>
+            <div style={styles.statDivider} />
             <div style={styles.statItem}>
               <span style={{ ...styles.statNumber, color: "#6366f1" }}>{completionRate}%</span>
               <span style={styles.statLabel}>Success Rate</span>
@@ -215,61 +260,33 @@ export default function ProfilePage() {
           {/* LEFT: Personal Info */}
           <div style={styles.card} className="card">
             <div style={styles.cardHeader}>
-              <div style={styles.cardHeaderAccent}></div>
+              <div style={styles.cardHeaderAccent} />
               <h3 style={styles.cardTitle}>Personal Information</h3>
             </div>
-
             <div style={styles.infoGrid}>
-              <InfoField
-                label="Phone"
-                icon="📱"
-                value={user.phone}
-                editing={isEditing}
-                inputValue={formData.phone}
-                onChange={(v) => setFormData({ ...formData, phone: v })}
-              />
-              <InfoField
-                label="Address"
-                icon="📍"
-                value={user.address}
-                editing={isEditing}
-                inputValue={formData.address}
-                onChange={(v) => setFormData({ ...formData, address: v })}
-              />
-              <InfoField
-                label="Account Status"
-                icon="🔒"
-                value={user.isVerified ? "Verified Account" : "Not Verified"}
-              />
-              <InfoField
-                label="Member Since"
-                icon="📅"
-                value={new Date(user.createdAt).toDateString()}
-              />
+              <InfoField label="Phone"   icon="📱" value={user.phone}   editing={isEditing} inputValue={formData.phone}   onChange={(v) => setFormData({ ...formData, phone: v })} />
+              <InfoField label="Address" icon="📍" value={user.address} editing={isEditing} inputValue={formData.address} onChange={(v) => setFormData({ ...formData, address: v })} />
+              <InfoField label="Account Status" icon="🔒" value={user.isVerified ? "Verified Account" : "Not Verified"} />
+              <InfoField label="Member Since"   icon="📅" value={new Date(user.createdAt).toDateString()} />
             </div>
           </div>
 
-          {/* RIGHT: Booking Summary + Progress */}
+          {/* RIGHT: Ring + Mini Cards */}
           <div style={styles.rightCol}>
-
-            {/* Progress ring card */}
             <div style={{ ...styles.card, ...styles.ringCard }} className="card">
               <div style={styles.cardHeader}>
-                <div style={{ ...styles.cardHeaderAccent, background: "#6366f1" }}></div>
+                <div style={{ ...styles.cardHeaderAccent, background: "#6366f1" }} />
                 <h3 style={styles.cardTitle}>Completion Rate</h3>
               </div>
               <div style={styles.ringWrapper}>
                 <svg width="120" height="120" viewBox="0 0 120 120">
                   <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" strokeWidth="10" />
                   <circle
-                    cx="60" cy="60" r="50"
-                    fill="none"
-                    stroke="url(#grad)"
-                    strokeWidth="10"
+                    cx="60" cy="60" r="50" fill="none"
+                    stroke="url(#grad)" strokeWidth="10"
                     strokeDasharray={`${2 * Math.PI * 50}`}
                     strokeDashoffset={`${2 * Math.PI * 50 * (1 - completionRate / 100)}`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 60 60)"
+                    strokeLinecap="round" transform="rotate(-90 60 60)"
                     style={{ transition: "stroke-dashoffset 1s ease" }}
                   />
                   <defs>
@@ -286,33 +303,30 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Mini booking cards */}
             <div style={styles.miniCards}>
               <MiniCard color="#10b981" bg="#ecfdf5" icon="✅" label="Completed" value={completed} />
-              <MiniCard color="#f59e0b" bg="#fffbeb" icon="⏳" label="Pending" value={pending} />
+              <MiniCard color="#f59e0b" bg="#fffbeb" icon="⏳" label="Pending"   value={pending} />
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
 }
 
+// ── INFO FIELD ──
 function InfoField({ label, icon, value, editing, inputValue, onChange }) {
   return (
     <div style={styles.infoField}>
       <div style={styles.infoLabelRow}>
-        <span style={styles.infoIcon}>{icon}</span>
+        <span style={{ fontSize: "14px" }}>{icon}</span>
         <span style={styles.infoLabel}>{label}</span>
       </div>
       {editing && onChange ? (
         <input
-          type="text"
-          value={inputValue}
+          type="text" value={inputValue}
           onChange={(e) => onChange(e.target.value)}
-          style={styles.infoInput}
-          className="info-input"
+          style={styles.infoInput} className="info-input"
         />
       ) : (
         <p style={styles.infoValue}>{value || "—"}</p>
@@ -321,10 +335,11 @@ function InfoField({ label, icon, value, editing, inputValue, onChange }) {
   );
 }
 
+// ── MINI CARD ──
 function MiniCard({ color, bg, icon, label, value }) {
   return (
     <div style={{ ...styles.miniCard, background: bg }} className="mini-card">
-      <span style={styles.miniIcon}>{icon}</span>
+      <span style={{ fontSize: "24px" }}>{icon}</span>
       <div>
         <p style={{ ...styles.miniValue, color }}>{value}</p>
         <p style={styles.miniLabel}>{label}</p>
@@ -334,394 +349,181 @@ function MiniCard({ color, bg, icon, label, value }) {
 }
 
 // ── STYLES ──────────────────────────────────────────────────────────────────
-
 const styles = {
   page: {
-    minHeight: "100vh",
-    background: "#f1f5f9",
-    fontFamily: "'Sora', 'Nunito', sans-serif",
-    paddingTop: "100px",
-    paddingBottom: "60px",
-    paddingLeft: "20px",
-    paddingRight: "20px",
-    position: "relative",
-    overflow: "hidden",
+    minHeight: "100vh", background: "#f1f5f9",
+    fontFamily: "'Sora','Nunito',sans-serif",
+    paddingTop: "100px", paddingBottom: "60px",
+    paddingLeft: "20px", paddingRight: "20px",
+    position: "relative", overflow: "hidden",
   },
   bgBlob1: {
-    position: "fixed",
-    top: "-200px",
-    left: "-200px",
-    width: "600px",
-    height: "600px",
-    borderRadius: "50%",
+    position: "fixed", top: "-200px", left: "-200px",
+    width: "600px", height: "600px", borderRadius: "50%",
     background: "radial-gradient(circle, rgba(99,102,241,0.12), transparent 70%)",
     pointerEvents: "none",
   },
   bgBlob2: {
-    position: "fixed",
-    bottom: "-200px",
-    right: "-100px",
-    width: "500px",
-    height: "500px",
-    borderRadius: "50%",
+    position: "fixed", bottom: "-200px", right: "-100px",
+    width: "500px", height: "500px", borderRadius: "50%",
     background: "radial-gradient(circle, rgba(20,184,166,0.12), transparent 70%)",
     pointerEvents: "none",
   },
   container: {
-    maxWidth: "960px",
-    margin: "0 auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "24px",
+    maxWidth: "960px", margin: "0 auto",
+    display: "flex", flexDirection: "column", gap: "24px",
   },
-
-  // Hero
   heroCard: {
-    borderRadius: "24px",
-    background: "#fff",
-    boxShadow: "0 4px 40px rgba(0,0,0,0.08)",
-    overflow: "hidden",
+    borderRadius: "24px", background: "#fff",
+    boxShadow: "0 4px 40px rgba(0,0,0,0.08)", overflow: "hidden",
   },
-  heroStripe: {
-    height: "6px",
-    background: "linear-gradient(90deg, #0d9488, #6366f1, #8b5cf6)",
-  },
+  heroStripe: { height: "6px", background: "linear-gradient(90deg,#0d9488,#6366f1,#8b5cf6)" },
   heroContent: {
-    display: "flex",
-    alignItems: "center",
-    gap: "24px",
-    padding: "32px 36px",
-    flexWrap: "wrap",
+    display: "flex", alignItems: "center", gap: "24px",
+    padding: "32px 36px", flexWrap: "wrap",
   },
-  avatarWrapper: {
-    position: "relative",
-    flexShrink: 0,
-  },
+  avatarWrapper: { position: "relative", flexShrink: 0 },
   avatar: {
-    width: "96px",
-    height: "96px",
-    borderRadius: "50%",
-    objectFit: "cover",
-    border: "4px solid #e0f2fe",
+    width: "96px", height: "96px", borderRadius: "50%",
+    objectFit: "cover", border: "4px solid #e0f2fe",
     boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
   },
   avatarOverlay: {
-    position: "absolute",
-    inset: 0,
-    borderRadius: "50%",
-    background: "rgba(0,0,0,0.45)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "2px",
-    cursor: "pointer",
+    position: "absolute", inset: 0, borderRadius: "50%",
+    background: "rgba(0,0,0,0.45)", display: "flex",
+    flexDirection: "column", alignItems: "center", justifyContent: "center",
+    gap: "2px", cursor: "pointer",
   },
-  cameraIcon: { fontSize: "20px" },
-  changeText: { fontSize: "10px", color: "#fff", fontWeight: 600 },
-  fileInput: {
-    position: "absolute",
-    inset: 0,
-    opacity: 0,
-    cursor: "pointer",
-    borderRadius: "50%",
-  },
+  fileInput: { position: "absolute", inset: 0, opacity: 0, cursor: "pointer", borderRadius: "50%" },
   onlineDot: {
-    position: "absolute",
-    bottom: "4px",
-    right: "4px",
-    width: "16px",
-    height: "16px",
-    borderRadius: "50%",
-    background: "#22c55e",
-    border: "3px solid #fff",
+    position: "absolute", bottom: "4px", right: "4px",
+    width: "16px", height: "16px", borderRadius: "50%",
+    background: "#22c55e", border: "3px solid #fff",
   },
   identity: { flex: 1, minWidth: "200px" },
-  name: {
-    margin: 0,
-    fontSize: "26px",
-    fontWeight: 700,
-    color: "#0f172a",
-    letterSpacing: "-0.5px",
-  },
+  name: { margin: 0, fontSize: "26px", fontWeight: 700, color: "#0f172a", letterSpacing: "-0.5px" },
   nameInput: {
-    fontSize: "22px",
-    fontWeight: 700,
-    color: "#0f172a",
-    border: "2px solid #6366f1",
-    borderRadius: "10px",
-    padding: "6px 12px",
-    outline: "none",
-    width: "100%",
-    background: "#f8faff",
-    marginBottom: "4px",
+    fontSize: "22px", fontWeight: 700, color: "#0f172a",
+    border: "2px solid #6366f1", borderRadius: "10px",
+    padding: "6px 12px", outline: "none", width: "100%",
+    background: "#f8faff", marginBottom: "4px",
   },
   email: { margin: "4px 0 10px", color: "#64748b", fontSize: "14px" },
   badgeRow: { display: "flex", gap: "8px", flexWrap: "wrap" },
-  badge: {
-    padding: "3px 10px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: 600,
-    letterSpacing: "0.3px",
-  },
+  badge: { padding: "3px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: 600, letterSpacing: "0.3px" },
   badgeVerified: { background: "#dcfce7", color: "#166534" },
-  badgeMember: { background: "#ede9fe", color: "#5b21b6" },
+  badgeMember:   { background: "#ede9fe", color: "#5b21b6" },
+  actionBtns: { marginLeft: "auto", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" },
   editBtn: {
-    marginLeft: "auto",
-    padding: "10px 22px",
-    borderRadius: "12px",
-    border: "2px solid #e2e8f0",
-    background: "#fff",
-    color: "#374151",
-    fontWeight: 600,
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "all 0.2s",
-    whiteSpace: "nowrap",
+    padding: "10px 22px", borderRadius: "12px", border: "2px solid #e2e8f0",
+    background: "#fff", color: "#374151", fontWeight: 600, fontSize: "14px",
+    cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap",
   },
   saveBtn: {
-    marginLeft: "auto",
-    padding: "10px 22px",
-    borderRadius: "12px",
-    border: "none",
-    background: "linear-gradient(135deg, #0d9488, #0891b2)",
-    color: "#fff",
-    fontWeight: 600,
-    fontSize: "14px",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
+    padding: "10px 22px", borderRadius: "12px", border: "none",
+    background: "linear-gradient(135deg,#0d9488,#0891b2)", color: "#fff",
+    fontWeight: 600, fontSize: "14px", cursor: "pointer", whiteSpace: "nowrap",
     boxShadow: "0 4px 14px rgba(13,148,136,0.4)",
   },
-
-  // Stats bar
-  statsBar: {
-    display: "flex",
-    borderTop: "1px solid #f1f5f9",
-    background: "#fafafa",
+  logoutBtn: {
+    padding: "10px 22px", borderRadius: "12px", border: "2px solid #fee2e2",
+    background: "#fff5f5", color: "#dc2626", fontWeight: 600, fontSize: "14px",
+    cursor: "pointer", transition: "all 0.2s",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", whiteSpace: "nowrap",
   },
-  statItem: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "18px 8px",
-    gap: "4px",
-  },
+  statsBar: { display: "flex", borderTop: "1px solid #f1f5f9", background: "#fafafa" },
+  statItem: { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "18px 8px", gap: "4px" },
   statDivider: { width: "1px", background: "#e2e8f0", margin: "14px 0" },
-  statNumber: {
-    fontSize: "26px",
-    fontWeight: 800,
-    color: "#0f172a",
-    lineHeight: 1,
-  },
-  statLabel: { fontSize: "11px", color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" },
-
-  // Grid
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 320px",
-    gap: "24px",
-    alignItems: "start",
-  },
-
-  // Card
-  card: {
-    background: "#fff",
-    borderRadius: "20px",
-    boxShadow: "0 2px 20px rgba(0,0,0,0.06)",
-    padding: "28px",
-  },
-  cardHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    marginBottom: "24px",
-  },
-  cardHeaderAccent: {
-    width: "4px",
-    height: "22px",
-    borderRadius: "4px",
-    background: "linear-gradient(180deg, #0d9488, #6366f1)",
-  },
-  cardTitle: {
-    margin: 0,
-    fontSize: "17px",
-    fontWeight: 700,
-    color: "#0f172a",
-  },
-
-  // Info fields
-  infoGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "20px",
-  },
-  infoField: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
+  statNumber: { fontSize: "26px", fontWeight: 800, color: "#0f172a", lineHeight: 1 },
+  statLabel:  { fontSize: "11px", color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" },
+  grid: { display: "grid", gridTemplateColumns: "1fr 320px", gap: "24px", alignItems: "start" },
+  card: { background: "#fff", borderRadius: "20px", boxShadow: "0 2px 20px rgba(0,0,0,0.06)", padding: "28px" },
+  cardHeader: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" },
+  cardHeaderAccent: { width: "4px", height: "22px", borderRadius: "4px", background: "linear-gradient(180deg,#0d9488,#6366f1)" },
+  cardTitle: { margin: 0, fontSize: "17px", fontWeight: 700, color: "#0f172a" },
+  infoGrid:   { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
+  infoField:  { display: "flex", flexDirection: "column", gap: "6px" },
   infoLabelRow: { display: "flex", alignItems: "center", gap: "6px" },
-  infoIcon: { fontSize: "14px" },
   infoLabel: { fontSize: "12px", color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" },
   infoValue: { margin: 0, fontSize: "15px", fontWeight: 600, color: "#1e293b" },
   infoInput: {
-    fontSize: "14px",
-    fontWeight: 600,
-    color: "#1e293b",
-    border: "2px solid #e0e7ff",
-    borderRadius: "8px",
-    padding: "8px 10px",
-    outline: "none",
-    background: "#f8faff",
-    transition: "border-color 0.2s",
+    fontSize: "14px", fontWeight: 600, color: "#1e293b",
+    border: "2px solid #e0e7ff", borderRadius: "8px",
+    padding: "8px 10px", outline: "none",
+    background: "#f8faff", transition: "border-color 0.2s",
   },
-
-  // Right col
   rightCol: { display: "flex", flexDirection: "column", gap: "16px" },
   ringCard: { display: "flex", flexDirection: "column" },
-  ringWrapper: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-    margin: "8px 0 4px",
-  },
-  ringCenter: {
-    position: "absolute",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
+  ringWrapper: { display: "flex", justifyContent: "center", alignItems: "center", position: "relative", margin: "8px 0 4px" },
+  ringCenter: { position: "absolute", display: "flex", flexDirection: "column", alignItems: "center" },
   ringPercent: { fontSize: "24px", fontWeight: 800, color: "#0f172a" },
   ringSubtext: { fontSize: "11px", color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" },
-
-  // Mini cards
   miniCards: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" },
-  miniCard: {
-    borderRadius: "16px",
-    padding: "16px",
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
-  },
-  miniIcon: { fontSize: "24px" },
+  miniCard:  { borderRadius: "16px", padding: "16px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 2px 10px rgba(0,0,0,0.04)" },
   miniValue: { fontSize: "22px", fontWeight: 800, margin: 0, lineHeight: 1 },
   miniLabel: { fontSize: "11px", color: "#6b7280", fontWeight: 600, margin: "2px 0 0", textTransform: "uppercase" },
-
-  // Toast
   toast: {
-    position: "fixed",
-    bottom: "32px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    color: "#fff",
-    padding: "12px 24px",
-    borderRadius: "12px",
-    fontWeight: 600,
-    fontSize: "14px",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    zIndex: 9999,
-    boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
-    animation: "slideUp 0.3s ease",
+    position: "fixed", bottom: "32px", left: "50%",
+    transform: "translateX(-50%)", color: "#fff",
+    padding: "12px 24px", borderRadius: "12px", fontWeight: 600, fontSize: "14px",
+    display: "flex", alignItems: "center", gap: "10px",
+    zIndex: 9999, boxShadow: "0 8px 30px rgba(0,0,0,0.25)", animation: "slideUp 0.3s ease",
   },
-  savingRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
+  modalBackdrop: {
+    position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+    backdropFilter: "blur(4px)", display: "flex", alignItems: "center",
+    justifyContent: "center", zIndex: 10000, animation: "fadeIn 0.2s ease",
   },
-
-  // Loading
-  loadingScreen: {
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "16px",
-    background: "#f1f5f9",
+  logoutModal: {
+    background: "#fff", borderRadius: "24px", padding: "40px 36px",
+    maxWidth: "380px", width: "90%", textAlign: "center",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+    animation: "popIn 0.25s cubic-bezier(0.34,1.56,0.64,1)",
   },
-  spinner: { /* handled by CSS */ },
-  loadingText: { color: "#64748b", fontFamily: "'Sora', sans-serif", fontSize: "15px" },
+  modalIcon:      { fontSize: "48px", marginBottom: "12px" },
+  modalTitle:     { margin: "0 0 8px", fontSize: "22px", fontWeight: 800, color: "#0f172a" },
+  modalBtns:      { display: "flex", gap: "12px", justifyContent: "center", marginTop: "20px" },
+  modalCancelBtn: { flex: 1, padding: "12px 16px", borderRadius: "12px", border: "2px solid #e2e8f0", background: "#f8fafc", color: "#374151", fontWeight: 600, fontSize: "14px", cursor: "pointer" },
+  modalLogoutBtn: { flex: 1, padding: "12px 16px", borderRadius: "12px", border: "none", background: "linear-gradient(135deg,#ef4444,#dc2626)", color: "#fff", fontWeight: 600, fontSize: "14px", cursor: "pointer", boxShadow: "0 4px 14px rgba(220,38,38,0.4)" },
+  loadingScreen: { minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px", background: "#f1f5f9" },
+  spinner: {},
+  loadingText: { color: "#64748b", fontFamily: "'Sora',sans-serif", fontSize: "15px" },
 };
 
 const spinnerCSS = `
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
   div[style*="flex-direction: column; align-items: center; justify-content: center"] > div {
-    width: 40px; height: 40px;
-    border: 4px solid #e2e8f0;
-    border-top-color: #0d9488;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    width:40px;height:40px;border:4px solid #e2e8f0;
+    border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 `;
 
 const globalCSS = `
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
-
   * { box-sizing: border-box; }
-
-  .hero-card {
-    transition: box-shadow 0.3s ease;
-  }
-  .hero-card:hover {
-    box-shadow: 0 8px 60px rgba(0,0,0,0.12) !important;
-  }
-
-  .card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 30px rgba(0,0,0,0.1) !important;
-  }
-
-  .action-btn:hover {
-    opacity: 0.88;
-    transform: translateY(-1px);
-  }
-
-  .info-input:focus {
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
-  }
-
-  .avatar-overlay {
-    transition: opacity 0.2s;
-  }
-
-  .mini-card {
-    transition: transform 0.2s ease;
-  }
-  .mini-card:hover {
-    transform: translateY(-2px);
-  }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-  }
-
+  .hero-card { transition: box-shadow 0.3s ease; }
+  .hero-card:hover { box-shadow: 0 8px 60px rgba(0,0,0,0.12) !important; }
+  .card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(0,0,0,0.1) !important; }
+  .action-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .logout-btn:hover { background: #fee2e2 !important; border-color: #fca5a5 !important; box-shadow: 0 4px 14px rgba(220,38,38,0.2); }
+  .info-input:focus { border-color: #6366f1 !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .mini-card { transition: transform 0.2s ease; }
+  .mini-card:hover { transform: translateY(-2px); }
+  .stat-clickable { transition: background 0.2s ease; border-radius: 12px; }
+  .stat-clickable:hover { background: rgba(99,102,241,0.07) !important; }
+  @keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+  @keyframes popIn   { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
   .btn-spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+    display:inline-block;width:14px;height:14px;
+    border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;
+    border-radius:50%;animation:spin 0.7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-    div[style*="grid-template-columns: 1fr 320px"] {
-      grid-template-columns: 1fr !important;
-    }
-    div[style*="grid-template-columns: 1fr 1fr"][style*="gap: 20px"] {
-      grid-template-columns: 1fr !important;
-    }
+  @media (max-width:768px) {
+    div[style*="grid-template-columns: 1fr 320px"] { grid-template-columns: 1fr !important; }
+    div[style*="grid-template-columns: 1fr 1fr"][style*="gap: 20px"] { grid-template-columns: 1fr !important; }
   }
 `;

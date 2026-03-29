@@ -1,16 +1,13 @@
 import mongoose from "mongoose";
 
-const FeedbackSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-    message: { type: String, required: true },
-    rating: { type: Number, min: 1, max: 5 },
-  },
-  { timestamps: true }
-);
+const FeedbackSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  phone: String,
+  service: String,
+  bookingId: String,
+  rating: Number,
+  comment: String,
+}, { timestamps: true });
 
-export default mongoose.models.Feedback ||
-  mongoose.model("Feedback", FeedbackSchema);
+export default mongoose.models.Feedback || mongoose.model("Feedback", FeedbackSchema);

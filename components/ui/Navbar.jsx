@@ -5,10 +5,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
 
   const pathname = usePathname();
   const router = useRouter();
@@ -20,21 +20,21 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ✅ USER + TOKEN LOAD
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+
     setIsLoggedIn(!!token);
+
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
   }, []);
 
   useEffect(() => {
-    setOpen(false);
     setMobileOpen(false);
   }, [pathname]);
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    router.push("/login");
-  };
 
   const textColor = scrolled
     ? "text-white"
@@ -57,18 +57,12 @@ export default function Navbar() {
           bottom: -2px; left: 0;
           width: 0%; height: 1.5px;
           background: linear-gradient(90deg, #f0c040, #ff6b00);
-          box-shadow: 0 0 8px #f0c040, 0 0 18px #ff6b00;
           transition: width 0.35s ease;
         }
         .nav-link:hover { 
           color: #f0c040 !important; 
-          text-shadow: 0 0 10px rgba(240,192,64,0.7); 
         }
         .nav-link:hover::after { width: 100%; }
-
-        .logo-img {
-          transition: all 0.4s ease;
-        }
       `}</style>
 
       {/* LOGO */}
@@ -83,10 +77,8 @@ export default function Navbar() {
           <img
             src="/Logo.svg"
             alt="Logo"
-            className="logo-img"
             style={{
               height: scrolled ? "60px" : "120px",
-              width: "auto",
             }}
           />
         </Link>
@@ -112,30 +104,27 @@ export default function Navbar() {
             <li><Link href="/contact" className="nav-link">Contact</Link></li>
             <li><Link href="/menu" className="nav-link">Menu</Link></li>
             <li><Link href="/booking" className="nav-link">Booking</Link></li>
+            <li><Link href="/feedback"className="nav-link" > Feedback</Link></li>
 
-            {/* PROFILE */}
-            <li className="relative">
-              <button
-                onClick={() => setOpen(!open)}
-                className={`${textColor} text-xl`}
-              >
-                Profile
-              </button>
-
-              {open && (
-                <div className="absolute right-0 mt-2 bg-black/90 border border-white/20 rounded-md w-40 text-white">
-                  {!isLoggedIn ? (
-                    <>
-                      <Link href="/login" className="block px-4 py-2">Login</Link>
-                      <Link href="/register" className="block px-4 py-2">Register</Link>
-                    </>
-                  ) : (
-                    <>
-                      <Link href="/profile" className="block px-4 py-2">My Profile</Link>
-                      <button onClick={logout} className="w-full text-left px-4 py-2">Logout</button>
-                    </>
-                  )}
-                </div>
+            {/* ✅ AVATAR (DIRECT PROFILE) */}
+            <li>
+              {isLoggedIn ? (
+                <img
+                  src={
+                    user?.image ||
+                    "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  }
+                  alt="User"
+                  onClick={() => router.push("/profile")}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-yellow-400 cursor-pointer hover:scale-105 transition"
+                />
+              ) : (
+                <span
+                  onClick={() => router.push("/login")}
+                  className={`${textColor} text-xl cursor-pointer`}
+                >
+                  Profile
+                </span>
               )}
             </li>
           </ul>
@@ -165,10 +154,9 @@ export default function Navbar() {
                   <li><Link href="/register">Register</Link></li>
                 </>
               ) : (
-                <>
-                  <li><Link href="/profile">Profile</Link></li>
-                  <li><button onClick={logout}>Logout</button></li>
-                </>
+                <li>
+                  <Link href="/profile">Profile</Link>
+                </li>
               )}
             </ul>
           </div>
