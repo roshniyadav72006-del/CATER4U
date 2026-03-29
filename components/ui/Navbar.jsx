@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -73,13 +74,16 @@ export default function Navbar() {
             : "top-0 opacity-100 left-1/2 -translate-x-1/2 md:left-10 md:translate-x-0"
         }`}
       >
-        <Link href="/">
-          <img
-            src="/Logo.svg"
-            alt="Logo"
-            style={{
-              height: scrolled ? "60px" : "120px",
-            }}
+       <Link href="/">
+       <Image
+         src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555385/Logo_z7wsgh.svg"
+         alt="Logo"
+         width={120}
+          height={120}
+            style={{ width: "auto", height: scrolled ? 56 : 112 }}
+           className="logo-img transition-all duration-300"
+           loading="eager"
+           priority
           />
         </Link>
       </div>

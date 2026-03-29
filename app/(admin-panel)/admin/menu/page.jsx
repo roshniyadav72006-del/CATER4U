@@ -29,7 +29,6 @@ export default function AdminMenuPage() {
     fetchMenus();
   };
 
-  // Filtered Menus
   const filteredMenus = selectedCategory
     ? menus.filter((m) => m.category === selectedCategory)
     : menus;
@@ -43,28 +42,37 @@ export default function AdminMenuPage() {
       <div className="flex items-center justify-between mb-4">
         <Link
           href="/admin/menu/create"
-          className="bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold px-5 py-2 rounded shadow transition" >
+          className="bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold px-5 py-2 rounded shadow transition">
           + Add New
         </Link>
 
-        {/* ✅ Category Dropdown Filter */}
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold px-5 py-2 rounded shadow transition" >
+          className="bg-[#556B2F] text-[#D4AF37] font-semibold px-5 py-2 rounded shadow">
           
           <option value="">All Categories</option>
-          <option value="Breakfast">Welcome drink </option>
-          <option value="Lunch">Starter</option>
-          <option value="Dinner">Soups</option>
-          <option value="Snacks">Main Course</option>
-          <option value="Drinks">Dessert</option>
+          <option value="Starter">Starter</option>
+          <option value="Main Course">Main Course</option>
+          <option value="Dessert">Dessert</option>
+          <option value="Beverages">Beverages</option>
+          <option value="Nasta">Nasta</option>
+            <option value="Rajasthani Special">Rajasthani Special</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Indian Breads">Indian Breads</option>
+            <option value="Dal">Dal</option>
+            <option value="Basmati ki Khushbu">Basmati ki Khushbu</option>
+            <option value="Mumbai Favourite">Mumbai Favourite</option>
+            <option value="Paneer Dishes">Paneer Dishes</option>
+            <option value="Paneer Rice">Paneer Rice</option>
+
         </select>
       </div>
 
       <table className="w-full mt-6 shadow rounded overflow-hidden">
         <thead className="bg-[#556B2F] text-[#D4AF37]">
           <tr>
+            <th className="p-3 text-left">Image</th> {/* ✅ NEW */}
             <th className="p-3 text-left">Name</th>
             <th className="p-3 text-left">Category</th>
             <th className="p-3 text-left">Action</th>
@@ -73,20 +81,32 @@ export default function AdminMenuPage() {
         <tbody className="bg-white">
           {filteredMenus.map((m) => (
             <tr key={m._id} className="border-t hover:bg-[#F5E6B3] transition">
+              <td className="p-3">
+                {m.image && (
+                  <img
+                    src={m.image}
+                    alt={m.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                )}
+              </td>
+
               <td className="p-3 font-medium text-[#3D4F1C]">
                 {m.name}
               </td>
+
               <td className="p-3 text-gray-700">
                 {m.category}
               </td>
+
               <td className="p-3">
                 <button
                   onClick={() => handleDelete(m._id)}
-                  className="text-red-600 hover:text-red-800 font-semibold"
-                >
+                  className="text-red-600 hover:text-red-800 font-semibold">
                   Delete
                 </button>
               </td>
+
             </tr>
           ))}
         </tbody>

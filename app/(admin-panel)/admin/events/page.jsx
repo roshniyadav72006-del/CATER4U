@@ -43,9 +43,10 @@ export default function EventsPage() {
   }, []);
 
   // ✅ STEP 1: Safe Calculations (reduce error fix)
-  const totalBookings = Array.isArray(events)
-    ? events.reduce((sum, event) => sum + (Number(event.totalBookings) || 0), 0)
-    : 0;
+  const totalBookings = Array.isArray(events) ? events.length : 0;
+  const getCategoryCount = (name) => {
+  return events.filter(e => e.name === name).length;
+  };
 
   const totalCategories = Array.isArray(events) ? events.length : 0;
 
@@ -153,7 +154,7 @@ export default function EventsPage() {
                 <tr>
                   <th>Category</th>
                   <th>Description</th>
-                  <th>Guest Range</th>
+                  
                   <th>Bookings</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -164,8 +165,8 @@ export default function EventsPage() {
                   <tr key={event._id}>
                     <td className="cat-name"><span className="emoji">{event.emoji}</span>{event.name}</td>
                     <td>{event.description}</td>
-                    <td>{event.minGuests} - {event.maxGuests}</td>
-                    <td>{event.totalBookings}</td>
+                    
+                    <td>{getCategoryCount(event.name)}</td>
                     <td><span className={`badge ${event.status}`}>{event.status}</span></td>
                     <td>
                       <button className="edit-btn" onClick={() => openEditModal(event)}>Edit</button>

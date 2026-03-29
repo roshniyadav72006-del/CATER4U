@@ -32,6 +32,7 @@ export default function Home() {
           fill
           priority
           className="object-cover"
+          
         />
 
         <div className="absolute inset-0 bg-black/50" />
@@ -82,16 +83,17 @@ export default function Home() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 items-center">
 
           <div className="hidden md:flex justify-center">
-            <div className="relative w-[400px] h-[400px]">
+            <div className="relative w-full h-[400px] md:h-[600px] lg:h-[800px]">
               <Image
-                src="/intro-left.jpg"
+                src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555265/intro-left_qj0mrs.jpg"
                 alt="Indian spices"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-contain"
+                priority
               />
             </div>
           </div>
-
           <div className="text-center">
             <p className="text-yellow-500 tracking-widest mb-3">
               INTRODUCTION
@@ -112,16 +114,9 @@ export default function Home() {
           </div>
 
           <div className="hidden md:flex justify-center">
-            <div className="relative w-[400px] h-[400px]">
-              <Image
-                src="/right.png"
-                alt="Indian spices"
-                fill
-                className="object-contain"
-              />
-            </div>
+            <div className="relative w-full h-[400px] md:h-[600px] lg:h-[800px]">
+           </div>           
           </div>
-
         </div>
       </section>
 

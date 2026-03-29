@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "../../../../lib/mongoose";
 import Menu from "../../../../models/Menu";
-import path from "path";
-import fs from "fs";
+import cloudinary from "../../../../lib/cloudinary";
 
 export async function GET() {
   try {
@@ -31,25 +30,22 @@ export async function POST(req) {
 
     let imagePath = "";
 
-    // If image exists
+    // ✅ Upload to Cloudinary
     if (file && file.name) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      const uploadDir = path.join(process.cwd(), "public/uploads");
+      const uploadResponse = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: "menu" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(buffer);
+      });
 
-      // Create uploads folder if not exists
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-
-      // Unique file name (prevent overwrite)
-      const uniqueName = Date.now() + "-" + file.name;
-      const filePath = path.join(uploadDir, uniqueName);
-
-      fs.writeFileSync(filePath, buffer);
-
-      imagePath = `/uploads/${uniqueName}`;
+      imagePath = uploadResponse.secure_url;
     }
 
     const menu = await Menu.create({
