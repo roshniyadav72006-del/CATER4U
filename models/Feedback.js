@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const FeedbackSchema = new mongoose.Schema({
+  feedbackId: String,
   name: String,
   email: String,
   phone: String,

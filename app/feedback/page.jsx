@@ -1,80 +1,48 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 export default function FeedbackForm() {
-  const router = useRouter();
-
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [customService, setCustomService] = useState("");
-  const [bookings, setBookings] = useState([]); // 🔥 real bookings
+
+  const [phoneError, setPhoneError] = useState(""); // 🔥 NEW
 
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     service: "",
-    bookingId: "",
     comment: "",
   });
-
-  // 🔐 CHECK LOGIN + FETCH BOOKINGS
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      toast.error("Please login first ❌");
-      router.push("/login");
-      return;
-    }
-
-    const fetchBookings = async () => {
-      try {
-        const res = await fetch("/api/user/bookings", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          setBookings(data.bookings); // 🔥 only completed bookings from API
-        } else {
-          toast.error("Failed to load bookings ❌");
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Error fetching bookings ❌");
-      }
-    };
-
-    fetchBookings();
-  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // ✅ Validation
   const isFormValid =
     form.name &&
     form.email &&
     form.phone &&
     form.service &&
-    form.bookingId &&
     form.comment &&
     rating > 0 &&
     (form.service !== "Other" || customService);
 
-  // ✅ SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!isFormValid) return;
+
+    // 🔥 PHONE VALIDATION (INLINE ERROR)
+    if (!/^[6-9]\d{9}$/.test(form.phone)) {
+      setPhoneError("Enter valid Indian phone number");
+      return;
+    } else {
+      setPhoneError("");
+    }
 
     const finalService =
       form.service === "Other" ? customService : form.service;
@@ -102,11 +70,11 @@ export default function FeedbackForm() {
           email: "",
           phone: "",
           service: "",
-          bookingId: "",
           comment: "",
         });
         setRating(0);
         setCustomService("");
+        setPhoneError("");
       } else {
         toast.error("Failed to submit feedback ❌");
       }
@@ -154,15 +122,30 @@ export default function FeedbackForm() {
             className="p-2 border rounded-md"
           />
 
-          <input
-            type="text"
-            name="phone"
-            placeholder="+91 "
-            value={form.phone}
-            onChange={handleChange}
-            required
-            className="p-2 border rounded-md"
-          />
+          {/* 🔥 PHONE FIELD UPDATED */}
+          <div>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Enter phone number"
+              value={form.phone}
+              onChange={(e) => {
+                handleChange(e);
+                setPhoneError(""); // typing pe error remove
+              }}
+              required
+              maxLength="10"
+              className={`p-2 border rounded-md w-full ${
+                phoneError ? "border-red-500" : ""
+              }`}
+            />
+
+            {phoneError && (
+              <p className="text-red-500 text-sm mt-1">
+                {phoneError}
+              </p>
+            )}
+          </div>
 
           {/* Service */}
           <div className="md:col-span-2">
@@ -191,27 +174,6 @@ export default function FeedbackForm() {
               />
             )}
           </div>
-
-          {/* 🔥 REAL BOOKINGS */}
-          <select
-            name="bookingId"
-            value={form.bookingId}
-            onChange={handleChange}
-            required
-            className="p-2 border rounded-md md:col-span-2"
-          >
-            <option value="">Select your completed event</option>
-
-            {bookings.length === 0 ? (
-              <option disabled>No completed bookings found</option>
-            ) : (
-              bookings.map((b) => (
-                <option key={b._id} value={b._id}>
-                  {b.service} - {new Date(b.date).toLocaleDateString()}
-                </option>
-              ))
-            )}
-          </select>
         </div>
 
         {/* ⭐ Rating */}

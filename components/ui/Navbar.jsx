@@ -69,7 +69,9 @@ export default function Navbar() {
       {/* LOGO */}
       <div
         className={`fixed z-50 transition-all duration-500 ${
-          scrolled
+        mobileOpen
+          ? "opacity-0 pointer-events-none" 
+          :scrolled
             ? "top-2 opacity-0 md:opacity-100 md:left-10"
             : "top-0 opacity-100 left-1/2 -translate-x-1/2 md:left-10 md:translate-x-0"
         }`}

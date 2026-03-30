@@ -8,7 +8,17 @@ export async function POST(req) {
 
     const data = await req.json();
 
-    const newFeedback = await Feedback.create(data);
+    // 🔥 NEW: count existing feedbacks
+    const count = await Feedback.countDocuments(); // 👈 added
+
+    // 🔥 NEW: generate custom feedback ID (FID001, FID002...)
+    const feedbackId = "FID" + String(count + 1).padStart(3, "0"); // 👈 added
+
+    // 🔥 UPDATED: include feedbackId
+    const newFeedback = await Feedback.create({
+      ...data,
+      feedbackId, // 👈 added
+    });
 
     return NextResponse.json({
       success: true,
@@ -17,6 +27,8 @@ export async function POST(req) {
     });
 
   } catch (error) {
+    console.error(error); // 👈 added for debugging
+
     return NextResponse.json(
       { success: false, message: "Error saving feedback" },
       { status: 500 }

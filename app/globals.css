@@ -12,10 +12,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
   
-    /* write your dark mode themes here--> */
-  }
 }
 
 @theme inline {
