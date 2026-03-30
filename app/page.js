@@ -85,7 +85,7 @@ export default function Home() {
           <div className="hidden md:flex justify-center">
             <div className="relative w-full h-[400px] md:h-[600px] lg:h-[800px]">
               <Image
-                src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555265/intro-left_qj0mrs.jpg"
+                src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555265/homepage.png"
                 alt="Indian spices"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
