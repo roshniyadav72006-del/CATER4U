@@ -4,7 +4,10 @@ import Booking from "../../../../models/Booking";
 export async function GET(req) {
   await connectDB();
 
-  const bookings = await Booking.find().sort({ createdAt: -1 });
+  const bookings = await Booking.find()
+    .populate("userId", "name email")
+    .sort({ createdAt: -1 });
+
 
   return NextResponse.json(bookings);
 }

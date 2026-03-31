@@ -68,11 +68,10 @@ export default function AdminMenuPage() {
 
         </select>
       </div>
-
       <table className="w-full mt-6 shadow rounded overflow-hidden">
         <thead className="bg-[#556B2F] text-[#D4AF37]">
           <tr>
-            <th className="p-3 text-left">Image</th> {/* ✅ NEW */}
+            <th className="p-3 text-left">Image</th>
             <th className="p-3 text-left">Name</th>
             <th className="p-3 text-left">Category</th>
             <th className="p-3 text-left">Action</th>

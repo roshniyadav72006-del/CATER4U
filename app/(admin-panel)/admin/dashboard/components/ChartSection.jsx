@@ -7,6 +7,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  CartesianGrid,
 } from "recharts";
 
 const months = [
@@ -21,18 +22,19 @@ export default function ChartSection({ data }) {
   }));
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow mt-6">
-      <h2 className="text-xl font-bold mb-4">Monthly Bookings</h2>
-      <ResponsiveContainer width="100%" height={300}>
+    <div style={{ width: "100%", height: "100%" }}>
+      <ResponsiveContainer>
         <LineChart data={formattedData}>
+          <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
-          <YAxis />
+          <YAxis allowDecimals={false} />
           <Tooltip />
           <Line
             type="monotone"
             dataKey="bookings"
             stroke="#f97316"
             strokeWidth={3}
+            dot={{ r: 4 }}
           />
         </LineChart>
       </ResponsiveContainer>

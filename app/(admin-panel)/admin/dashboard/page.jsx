@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ChartSection from "./components/ChartSection";
 import { useRouter } from "next/navigation";
+import { XCircle } from "lucide-react";
 import {
   CheckCircle,
   Clock,
@@ -80,7 +81,7 @@ export default function DashboardPage() {
         setStats(dashData);
         if (eventsRes.ok) {
           const eventsData = await eventsRes.json();
-          setTodayEvents(eventsData.events || eventsData || []);
+          setTodayEvents(eventsData.todayEvents || []);
         }
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
@@ -120,8 +121,9 @@ export default function DashboardPage() {
     { title: "Total Bookings", value: stats.totalBookings,   subtext: "All time",             icon: CalendarCheck, accent: "#8B9D3A", lightBg: "#f0f4d8", iconColor: "#6b7a2a" },
     { title: "Pending",        value: stats.pendingBookings, subtext: "Awaiting confirmation", icon: Clock,         accent: "#C9A84C", lightBg: "#fdf6dc", iconColor: "#a07830" },
     { title: "Confirmed",      value: stats.confirmedBookings, subtext: "Successfully booked", icon: CheckCircle,  accent: "#7a9230", lightBg: "#eaf2d0", iconColor: "#5a7020" },
-    { title: "Revenue",        value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`, subtext: "Total earnings", icon: IndianRupee, accent: "#E2C06A", lightBg: "#fef8e4", iconColor: "#b8920a" },
-  ];
+    { title: "Cancelled", value: stats.cancelledBookings, subtext: "Cancelled bookings", icon: XCircle, accent: "#bd3823", lightBg: "#fde8e8", iconColor: "#b91c1c" },
+   ];
+
 
   return (
     <>
@@ -144,7 +146,8 @@ export default function DashboardPage() {
         @keyframes pulse-og { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
 
         /* stat cards */
-        .og-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:24px; }
+        .og-cards {  display:grid;  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));  gap:18px;
+           margin-bottom:24px;}
         @media(max-width:900px){.og-cards{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:520px){.og-cards{grid-template-columns:1fr}}
 
@@ -171,7 +174,7 @@ export default function DashboardPage() {
         .og-card-line { margin-top:16px; height:1px; background:linear-gradient(90deg,var(--card-accent) 0%,transparent 100%); opacity:0.3; border-radius:4px; }
 
         /* panels */
-        .og-panel { background:#fff; border-radius:18px; border:1px solid #ede8d0; box-shadow:0 2px 12px rgba(139,157,58,0.06); overflow:hidden; }
+        .og-panel { background:#fff; border-radius:18px; border:1px solid #ede8d0; box-shadow:0 2px 12px rgba(139,157,58,0.06); overflow:hidden;position: relative;  z-index: 2;   }
         .og-panel-head { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid #f0ead8; }
         .og-panel-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
         .og-panel-title { font-size:14px; font-weight:600; color:#2a2a1a; }
@@ -180,7 +183,7 @@ export default function DashboardPage() {
         /* charts row */
         .og-charts { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
         @media(max-width:860px){.og-charts{grid-template-columns:1fr}}
-
+        .og-panel {  display: flex;  flex-direction: column;  overflow: hidden;}
         /* events */
         .og-event-row { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid #f5f0e0; transition:background 0.15s; }
         .og-event-row:last-child { border-bottom:none; }
@@ -192,6 +195,9 @@ export default function DashboardPage() {
         .og-event-meta { display:flex; align-items:center; gap:5px; color:#8a7a4a; font-size:11px; }
         .og-count-pill { background:#f0f4d8; border:1px solid #c8d890; color:#5a7020; font-size:11px; font-weight:600; padding:3px 12px; border-radius:100px; }
         .og-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:56px 24px; gap:10px; }
+        .chart-fix {  position: relative;  z-index: 10;  background: #ffffff;}
+        .og-panel > div {  min-height: 0;}
+        .recharts-responsive-container {  min-width: 0;}
 
         /* fade in */
         .og-fade { animation:og-rise 0.5s cubic-bezier(0.16,1,0.3,1) both; }
@@ -245,22 +251,23 @@ export default function DashboardPage() {
           {/* Charts */}
           <div className="og-charts og-fade d5">
             {/* Revenue */}
-            <div className="og-panel">
-              <div className="og-panel-head">
-                <div style={{display:"flex", alignItems:"center", gap:10}}>
-                  <div className="og-panel-icon" style={{background:"#f0f4d8"}}>
-                    <TrendingUp size={15} style={{color:"#6b7a2a"}} />
+            <div className="og-panel chart-fix">
+             <div className="og-panel-head">
+               <div style={{display:"flex", alignItems:"center", gap:10}}>
+                 <div className="og-panel-icon" style={{background:"#f0f4d8"}}>
+                     <TrendingUp size={15} style={{color:"#6b7a2a"}} />
                   </div>
                   <div>
-                    <div className="og-panel-title">Monthly Revenue</div>
-                    <div className="og-panel-sub">Last 12 months analysis</div>
-                  </div>
-                </div>
-              </div>
-              <div style={{padding:24}}>
-                <ChartSection data={stats.monthlyData || []} />
-              </div>
+               <div className="og-panel-title">Monthly Bookings</div>
+             <div className="og-panel-sub">Last 12 months analysis</div>
             </div>
+         </div>
+         </div>
+
+           <div style={{ height: 350, padding: "20px 24px" }}>
+              <ChartSection data={stats.monthlyData || []} />
+            </div>
+          </div>
 
             {/* Pie */}
             <div className="og-panel">

@@ -6,6 +6,7 @@ export async function GET() {
   try {
     await connectDB();
 
+    // ✅ EXISTING LOGIC (UNCHANGED)
     const totalBookings = await Booking.countDocuments();
 
     const pendingBookings = await Booking.countDocuments({
@@ -47,7 +48,23 @@ export async function GET() {
       },
       { $sort: { _id: 1 } },
     ]);
+    // ✅ Category wise (Wedding / Birthday)
+    const categoryData = await Booking.aggregate([
+      {
+        $group: {
+          _id: "$eventType",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
+    // ✅ Today events (Active)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayBookings = await Booking.countDocuments({
+      createdAt: { $gte: today },
+    });
     return NextResponse.json({
       totalBookings,
       pendingBookings,
@@ -56,6 +73,10 @@ export async function GET() {
       completedBookings,
       totalRevenue,
       monthlyData,
+
+      // ✅ NEW DATA
+      categoryData,
+      todayBookings,
     });
 
   } catch (error) {
