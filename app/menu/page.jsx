@@ -16,7 +16,7 @@ export default function MenuPage() {
   const [showCategories, setShowCategories] = useState(false);
   const categories = ["All", "Starter","Main Course",  "Dessert","Beverages","Chinese", "Dal","Rice","Nasta",
            "Rajathani Special",
-           "Indain Bread",
+           "Indain Breads",
            "Basmati ki Khushbu",
            "Mumbai Favourite"
            ];  // 🔥 NEW
@@ -215,7 +215,7 @@ export default function MenuPage() {
            "Rice",
            "Nasta",
            "Rajathani Special",
-           "Indain Bread",
+           "Indain Breads",
            "Basmati ki Khushbu",
            "Mumbai Favourite",
            

@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+
 
 const COOKIE_FORM = "booking_form";
 const COOKIE_STEP = "booking_step";
@@ -31,6 +34,19 @@ const clearBookingCookies = () => {
 const today = new Date().toISOString().split("T")[0];
 
 export default function BookingPage() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${year}-${month}-${day}`;
+  };
+
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [availabilityData, setAvailabilityData] = useState([]);
   const router = useRouter();
   const [errors, setErrors] = useState({});
   const [authChecked, setAuthChecked] = useState(false);
@@ -44,7 +60,25 @@ export default function BookingPage() {
       setAuthChecked(true);
     }
   }, []);
+  useEffect(() => {
+   const fetchAvailability = async () => {
+     const month = selectedDate.toISOString().slice(0, 7);
 
+     const res = await fetch(`/api/availability?month=${month}`);
+     const data = await res.json();
+
+     setAvailabilityData(data);
+    };
+   fetchAvailability();
+  }, [selectedDate]);
+  const getCountForDate = (date) => {
+    const d = formatDate(date) ;    
+    const found = availabilityData.find(
+      (item) =>
+        new Date(item._id).toISOString().split("T")[0] === d
+    );
+    return found ? found.count : 0;
+  };
   const getInitialState = () => {
     try {
       const savedForm = JSON.parse(Cookies.get(COOKIE_FORM) || "{}");
@@ -152,6 +186,7 @@ export default function BookingPage() {
     else if (!/^\S+@\S+\.\S+$/.test(formData.email))
       newErrors.email = "Enter a valid email address";
     if (!formData.phone) newErrors.phone = "Phone number is required";
+
     else if (!/^\d{10}$/.test(formData.phone))
       newErrors.phone = "Enter a valid 10-digit phone number";
     setErrors(newErrors);
@@ -178,7 +213,10 @@ export default function BookingPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          eventDate: new Date(formData.eventDate),
+        }),
       });
 
       const data = await res.json();
@@ -289,17 +327,52 @@ export default function BookingPage() {
 
               <div>
                 <label className="block mb-2 text-gray-600">Event Date <span className="text-red-500">*</span></label>
-                {/* ✅ min=today — calendar mein aaj se pehle ki dates grey/disabled hongi */}
                 <input
-                  type="date"
-                  name="eventDate"
-                  value={formData.eventDate}
-                  onChange={handleChange}
-                  min={today}
-                  className="w-full border rounded-lg p-3 focus:outline-none"
-                  style={inputStyle("eventDate")}
-                />
-                <ErrorMsg field="eventDate" />
+                 type="text"
+                 readOnly
+                 value={formData.eventDate}
+                 placeholder="Select Date"
+                 onClick={() => setShowCalendar(!showCalendar)} // 🔥 IMPORTANT
+                 className="w-full border rounded-lg p-3 mb-2 cursor-pointer"
+
+              />
+             {/* Drop Down Calendar */}
+                {showCalendar &&(
+                   <div className="absolute z-50 mt-2 bg-white shadow-lg rounded-lg p-2">
+                     <Calendar
+                        onChange={(date) => {
+                          setSelectedDate(date);
+                          setShowCalendar(false);
+                          setFormData((prev) => ({
+                            ...prev,                          
+                            eventDate: formatDate(date),
+                          }));
+                        }}
+                        value={selectedDate}
+                        minDate={new Date()} // ❌ past disable
+                        tileContent={({ date }) => {
+                          const count = getCountForDate(date);
+                          let color = "green";
+                          if (count >= 5) color = "red";
+                          else if (count >= 4) color = "orange";
+                          return(
+                            <div                    
+                              style={{
+                                width:6,
+                                height: 6,
+                                borderRadius: "50%",
+                                margin: "auto",
+                                marginTop: 2,
+                                backgroundColor: color,
+                              }}
+                            />
+                          );
+                        }}
+                      />
+                  </div>
+                )}
+                <ErrorMsg fied="eventDate"/>
+                  
               </div>
 
               <div>

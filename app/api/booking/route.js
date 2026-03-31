@@ -90,7 +90,24 @@ export async function POST(req) {
 
     // ================= SAVE BOOKING =================
 
+    const lastBooking = await Booking.findOne().sort({ createdAt: -1 }); // 👈 added
+    let nextId = 1;
+    if (lastBooking?.bookingId) {
+      const num = parseInt(lastBooking.bookingId.replace("BKG", ""));
+      nextId = num + 1;
+    }
+    const bookingId = "BKG" + String(nextId).padStart(3, "0"); // 👈 added
+    const existingBookings = await Booking.countDocuments({
+       eventDate: eventDate
+    });
+    if (existingBookings >= 6) {
+      return NextResponse.json(
+        {message:"Date full"},
+        {status: 400}
+      );
+    }
     const newBooking = await Booking.create({
+
       userId: decoded.userId || decoded.id,
       eventType,
       eventDate,
@@ -105,6 +122,7 @@ export async function POST(req) {
       email,
       phone,
       status: "pending",
+      bookingId, // 🔥 ADD THIS
     });
 
     // ================= FORMAT MENU CATEGORY-WISE =================

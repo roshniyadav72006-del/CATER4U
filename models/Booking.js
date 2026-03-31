@@ -17,7 +17,7 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
     eventDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     eventTime: {
@@ -53,6 +53,7 @@ const bookingSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    
 
     // Step 3 - Contact
     fullName: {
@@ -72,6 +73,7 @@ const bookingSchema = new mongoose.Schema(
       default: "pending"
       
     },
+    bookingId: String, // 🔥 NEW FIELD
   },
   { timestamps: true }
 );
