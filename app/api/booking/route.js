@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import connectDB from "../../../lib/mongoose";
 import Booking from "../../../models/Booking";
 import jwt from "jsonwebtoken";
-import Counter from "../../../models/Counter";
-import { sendEmail } from "../../../lib/nodemailer";
 import nodemailer from "nodemailer";
 
 // ================= GET BOOKINGS (filtered by userId) =================
@@ -89,6 +87,9 @@ export async function POST(req) {
         { status: 400 }
       );
     }
+
+    // ================= SAVE BOOKING =================
+
     const lastBooking = await Booking.findOne().sort({ createdAt: -1 }); // 👈 added
     let nextId = 1;
     if (lastBooking?.bookingId) {
@@ -124,8 +125,7 @@ export async function POST(req) {
       bookingId, // 🔥 ADD THIS
     });
 
-// 🔥 DEBUG LINE
-console.log("Saved booking:", booking);
+    // ================= FORMAT MENU CATEGORY-WISE =================
 
     let menuHTML = "";
 
@@ -218,7 +218,7 @@ console.log("Saved booking:", booking);
     });
 
     return NextResponse.json(
-      { message: "Booking saved successfully" ,booking },
+      { message: "Booking saved successfully", booking: newBooking },
       { status: 201 }
     );
   } catch (error) {
@@ -359,5 +359,4 @@ export async function PATCH(req) {
       { status: 500 }
     );
   }
-  
 }
