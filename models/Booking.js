@@ -63,7 +63,7 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       default: "pending",
     },
-    bookingId: String, // 🔥 NEW FIELD
+    
   },
   { timestamps: true }
 );

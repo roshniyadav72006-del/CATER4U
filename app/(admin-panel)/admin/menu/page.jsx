@@ -34,7 +34,7 @@ export default function AdminMenuPage() {
     : menus;
 
   return (
-    <div className="p-10 bg-[#F5E6B3] min-h-screen">
+    <div className="p-10 bg-[#FFF8DC] min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-[#3D4F1C]">
         Menu Management
       </h1>
@@ -42,14 +42,14 @@ export default function AdminMenuPage() {
       <div className="flex items-center justify-between mb-4">
         <Link
           href="/admin/menu/create"
-          className="bg-[#556B2F] hover:bg-[#3D4F1C] text-[#D4AF37] font-semibold px-5 py-2 rounded shadow transition">
+          className="bg-[#273B09] hover:bg-[#3D4F1C] text-[#fff] font-semibold px-5 py-2 rounded shadow transition">
           + Add New
         </Link>
 
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="bg-[#556B2F] text-[#D4AF37] font-semibold px-5 py-2 rounded shadow">
+          className="bg-[#273B09] text-[#fff] font-semibold px-5 py-2 rounded shadow">
           
           <option value="">All Categories</option>
           <option value="Starter">Starter</option>
@@ -61,6 +61,7 @@ export default function AdminMenuPage() {
             <option value="Chinese">Chinese</option>
             <option value="Indian Breads">Indian Breads</option>
             <option value="Dal">Dal</option>
+            <option value="Dosti">Dosti</option>
             <option value="Basmati ki Khushbu">Basmati ki Khushbu</option>
             <option value="Mumbai Favourite">Mumbai Favourite</option>
             <option value="Paneer Dishes">Paneer Dishes</option>
@@ -69,7 +70,7 @@ export default function AdminMenuPage() {
         </select>
       </div>
       <table className="w-full mt-6 shadow rounded overflow-hidden">
-        <thead className="bg-[#556B2F] text-[#D4AF37]">
+        <thead className="bg-[#273B09] text-[#fff]">
           <tr>
             <th className="p-3 text-left">Image</th>
             <th className="p-3 text-left">Name</th>

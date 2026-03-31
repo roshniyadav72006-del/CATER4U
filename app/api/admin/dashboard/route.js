@@ -9,20 +9,22 @@ export async function GET() {
     // ✅ EXISTING LOGIC (UNCHANGED)
     const totalBookings = await Booking.countDocuments();
 
-    const pendingBookings = await Booking.countDocuments({
-      status: "Pending",
-    });
+    // ✅ FIXED STATUS COUNTS (case + multiple values handled)
 
-    const confirmedBookings = await Booking.countDocuments({
-      status: "Confirmed",
-    });
+       const pendingBookings = await Booking.countDocuments({
+          status: { $in: ["pending", "Pending"] },
+        });
+
+       const confirmedBookings = await Booking.countDocuments({
+         status: { $in: ["confirmed", "Confirmed", "approved"] },
+          });
 
     const cancelledBookings = await Booking.countDocuments({
-      status: "Cancelled",
+      status: { $in: ["cancelled", "Cancelled", "rejected"] },
     });
 
     const completedBookings = await Booking.countDocuments({
-      status: "Completed",
+        status: { $in: ["completed", "Completed"] },
     });
 
     // ✅ Total Revenue (Completed only)

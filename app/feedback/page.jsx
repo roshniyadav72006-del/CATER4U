@@ -567,7 +567,7 @@ export default function FeedbackForm() {
                   </div>
 
                   <div>
-                    <label className="field-label">Would you recommend CATER4U to friends and family? <span className="req">*</span></label>
+                    <label className="field-label">Would you recommend Chandani Caterer's to friends and family? <span className="req">*</span></label>
                     <div className="radio-group">
                       {[
                         { value: "yes", label: "Yes, Definitely!" },

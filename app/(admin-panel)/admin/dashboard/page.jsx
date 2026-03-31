@@ -81,6 +81,7 @@ export default function DashboardPage() {
         setStats(dashData);
         if (eventsRes.ok) {
           const eventsData = await eventsRes.json();
+          console.log("TODAY EVENTS DATA:", eventsData.todayEvents);
           setTodayEvents(eventsData.todayEvents || []);
         }
       } catch (e) { console.error(e); }
@@ -129,7 +130,7 @@ export default function DashboardPage() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap');
-        .og-page { min-height:100vh; background:#f7f4eb; font-family:'DM Sans',sans-serif; color:#2a2a1a; }
+        .og-page { min-height:100vh; background:#FFF8DC; font-family:'DM Sans',sans-serif; color:#2a2a1a; }
         .og-inner {   width:100%;   padding:2px 20px; }
 
         /* header */
@@ -181,9 +182,11 @@ export default function DashboardPage() {
         .og-panel-sub { font-size:11px; color:#a09060; margin-top:1px; }
 
         /* charts row */
-        .og-charts { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
+        .og-charts { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px;,align-items: stretch; }
         @media(max-width:860px){.og-charts{grid-template-columns:1fr}}
         .og-panel {  display: flex;  flex-direction: column;  overflow: hidden;}
+        .og-panel > div { min-height: 0;}
+        .recharts-responsive-container { min-width: 0 !important;}
         /* events */
         .og-event-row { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid #f5f0e0; transition:background 0.15s; }
         .og-event-row:last-child { border-bottom:none; }
@@ -264,9 +267,9 @@ export default function DashboardPage() {
          </div>
          </div>
 
-           <div style={{ height: 350, padding: "20px 24px" }}>
+           <div style={{ width: "100%", height: 320, padding: "10px 20px 20px 10px" }}>
               <ChartSection data={stats.monthlyData || []} />
-            </div>
+           </div>
           </div>
 
             {/* Pie */}
@@ -322,28 +325,69 @@ export default function DashboardPage() {
                 <p style={{fontSize:11,color:"#c0b080"}}>Enjoy your free day!</p>
               </div>
             ) : (
-              todayEvents.map((event, i) => (
-                <div key={event._id || event.id || i} className="og-event-row">
-                  <div className="og-event-left">
-                    <EventDot status={event.status} />
-                    <div style={{minWidth:0}}>
-                      <div className="og-event-name">{event.eventName || event.name || event.title}</div>
-                      <div className="og-event-venue">{event.venue || event.location || event.venueName || "—"}</div>
-                    </div>
-                  </div>
-                  <div className="og-event-right">
-                    <div className="og-event-meta">
-                      <Clock size={12} />
-                      {event.eventTime || event.time || (event.eventDate ? new Date(event.eventDate).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}) : "—")}
-                    </div>
-                    <div className="og-event-meta">
-                      <Users size={12} />
-                      {event.guestCount || event.guests || event.numberOfGuests || "—"} guests
-                    </div>
-                    <StatusBadge status={event.status || "Pending"} />
-                  </div>
-                </div>
-              ))
+              <div style={{ padding: "10px 20px 20px 20px" }}>
+  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+    <thead>
+      <tr style={{ background: "#f7f4eb", textAlign: "left" }}>
+        <th style={{ padding: "10px" }}>Name</th>
+        <th style={{ padding: "10px" }}>Event</th>
+        <th style={{ padding: "10px" }}>Venue</th>
+        <th style={{ padding: "10px" }}>Time</th>
+        <th style={{ padding: "10px" }}>Guests</th>
+        <th style={{ padding: "10px" }}>Status</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {todayEvents.map((event, i) => (
+    <tr
+      key={event._id || event.id || i}
+      style={{ borderBottom: "1px solid #eee" }}    >
+      {/* Customer Name */}
+      <td style={{ padding: "10px" }}>
+        {event.userId?.name ||
+          event.fullName ||
+          event.customerName ||
+          event.name ||
+          "—"}
+      </td>
+      {/* Event Type */}
+      <td style={{ padding: "10px" }}>
+        {event.eventType || event.type || event.eventName || "—"}
+      </td>
+
+      {/* Venue */}
+      <td style={{ padding: "10px" }}>
+        {event.venue || event.location || event.venueName || "—"}
+      </td>
+
+      {/* Time */}
+      <td style={{ padding: "10px" }}>
+        {event.eventTime ||
+          event.time ||
+          (event.eventDate
+            ? new Date(event.eventDate).toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "—")}
+      </td>
+      {/* Guests */}
+      <td style={{ padding: "10px" }}>
+        {event.guestCount ||
+          event.guests ||
+          event.numberOfGuests ||
+          "—"}
+      </td>
+         {/* Status */}
+         <td style={{ padding: "10px" }}>
+           <StatusBadge status={event.status || "Pending"} />
+            </td>
+          </tr>
+        ))}
+       </tbody>
+          </table>
+          </div>
             )}
           </div>
 

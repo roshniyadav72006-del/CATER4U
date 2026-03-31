@@ -36,8 +36,7 @@ export default function ContactPage() {
                   <p className="text-gray-500">Email</p>
                   <a
                      href="https://mail.google.com/mail/?view=cm&to=cater4u2025@gmail.com&su=Booking%20Inquiry&body=Hello%2C%20I%20want%20to%20book%20catering%20service"
-                     target="_blank"
-                    >
+                     target="_blank">
                     cater4u2025@gmail.com
                   </a>
                   

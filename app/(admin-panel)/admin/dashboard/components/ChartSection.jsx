@@ -22,22 +22,22 @@ export default function ChartSection({ data }) {
   }));
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
-      <ResponsiveContainer>
-        <LineChart data={formattedData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Line
-            type="monotone"
-            dataKey="bookings"
-            stroke="#f97316"
-            strokeWidth={3}
-            dot={{ r: 4 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+  <div style={{ width: "100%", height: 300, minWidth: 0 }}>
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={formattedData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
+        <YAxis allowDecimals={false} />
+        <Tooltip />
+        <Line
+          type="monotone"
+          dataKey="bookings"
+          stroke="#f97316"
+          strokeWidth={3}
+          dot={{ r: 4 }}
+        />
+      </LineChart>
+     </ResponsiveContainer>
+   </div>
   );
 }
