@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Cookies from "js-cookie";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -35,6 +35,7 @@ const today = new Date().toISOString().split("T")[0];
 
 export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const calendarWrapperRef = useRef(null);
   const formatDate = (date) => {
     if (!date) return "";
     const d = new Date(date);
@@ -44,12 +45,30 @@ export default function BookingPage() {
     const year = d.getFullYear();
     return `${year}-${month}-${day}`;
   };
+  const validateStep2 = () => {
+    if (!formData.selectedMenu || formData.selectedMenu.length < 5) {
+      toast.error("Please select at least 5 menu items");
+      return false;
+    }
+   return true;
+  };
 
   const [showCalendar, setShowCalendar] = useState(false);
   const [availabilityData, setAvailabilityData] = useState([]);
   const router = useRouter();
   const [errors, setErrors] = useState({});
   const [authChecked, setAuthChecked] = useState(false);
+
+  // ✅ Click outside se calendar band ho
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (calendarWrapperRef.current && !calendarWrapperRef.current.contains(e.target)) {
+        setShowCalendar(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -60,8 +79,7 @@ export default function BookingPage() {
       setAuthChecked(true);
     }
   }, []);
-  useEffect(() => {
-   const fetchAvailability = async () => {
+  const fetchAvailability = async () => {
      const month = selectedDate.toISOString().slice(0, 7);
 
      const res = await fetch(`/api/availability?month=${month}`);
@@ -69,13 +87,14 @@ export default function BookingPage() {
 
      setAvailabilityData(data);
     };
+  useEffect(() => {   
    fetchAvailability();
   }, [selectedDate]);
   const getCountForDate = (date) => {
     const d = formatDate(date) ;    
     const found = availabilityData.find(
       (item) =>
-        new Date(item._id).toISOString().split("T")[0] === d
+        formatDate(new Date(item._id)) === d // ✅ FIXED
     );
     return found ? found.count : 0;
   };
@@ -145,6 +164,13 @@ export default function BookingPage() {
   }, [formData]);
 
   const goToStep = (newStep) => {
+     if (newStep === 3) {
+      if (!formData.selectedMenu || formData.selectedMenu.length < 5) {
+        toast.error("Select at least 5 menu items before proceeding");
+        return; 
+      }
+    }
+
     setStep(newStep);
     Cookies.set(COOKIE_STEP, String(newStep), COOKIE_OPTIONS);
   };
@@ -186,9 +212,8 @@ export default function BookingPage() {
     else if (!/^\S+@\S+\.\S+$/.test(formData.email))
       newErrors.email = "Enter a valid email address";
     if (!formData.phone) newErrors.phone = "Phone number is required";
-
-    else if (!/^\d{10}$/.test(formData.phone))
-      newErrors.phone = "Enter a valid 10-digit phone number";
+    else if (!/^[6-9]\d{9}$/.test(formData.phone))
+      newErrors.phone = "Enter a valid Indian mobile number (10 digits, starting with 6-9)";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -221,12 +246,16 @@ export default function BookingPage() {
 
       const data = await res.json();
       if (!res.ok) {
+         if (data.message === "Date full") {
+          await fetchAvailability(); // 🔥🔥🔥 MAIN FIX
+        }
         toast.error(data.message);
         return;
       }
 
       clearBookingCookies();
       toast.success("Your booking has been submitted! Please wait for confirmation.");
+      await fetchAvailability(); // 🔥 update calendar
       router.push("/booking-success");
 
     } catch (error) {
@@ -268,7 +297,7 @@ export default function BookingPage() {
         <p style={{ color: "#5a5a5a" }}>Let us make your event memorable with our catering services</p>
 
         {/* STEPPER */}
-        <div className="flex justify-center items-center gap-10 mt-8">
+        <div className="flex justify-center items-center gap-2 md:gap-10 mt-6 md:mt-8 flex-wrap">
           {[1, 2, 3].map((num) => (
             <div key={num} className="flex items-center gap-4">
               <div
@@ -325,20 +354,33 @@ export default function BookingPage() {
                 <ErrorMsg field="eventType" />
               </div>
 
-              <div>
+              {/* ✅ Calendar Dropdown — Mobile + Desktop dono ke liye responsive */}
+              <div ref={calendarWrapperRef} style={{ position: "relative" }}>
                 <label className="block mb-2 text-gray-600">Event Date <span className="text-red-500">*</span></label>
                 <input
                  type="text"
                  readOnly
                  value={formData.eventDate}
                  placeholder="Select Date"
-                 onClick={() => setShowCalendar(!showCalendar)} // 🔥 IMPORTANT
+                 onClick={() => setShowCalendar(!showCalendar)}
                  className="w-full border rounded-lg p-3 mb-2 cursor-pointer"
-
+                 style={inputStyle("eventDate")}
               />
              {/* Drop Down Calendar */}
                 {showCalendar &&(
-                   <div className="absolute z-50 mt-2 bg-white shadow-lg rounded-lg p-2">
+                   <div style={{
+                     position: "absolute",
+                     zIndex: 9999,
+                     top: "100%",
+                     left: 0,
+                     right: 0,
+                     backgroundColor: "#fff",
+                     boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
+                     borderRadius: "12px",
+                     padding: "12px",
+                     width: "100%",
+                     maxWidth: "360px",
+                   }}>
                      <Calendar
                         onChange={(date) => {
                           setSelectedDate(date);
@@ -353,8 +395,8 @@ export default function BookingPage() {
                         tileContent={({ date }) => {
                           const count = getCountForDate(date);
                           let color = "green";
-                          if (count >= 5) color = "red";
-                          else if (count >= 4) color = "orange";
+                          if (count >= 5){ color = "red";}
+                          else if (count >= 4) {color = "orange";}
                           return(
                             <div                    
                               style={{
@@ -368,10 +410,25 @@ export default function BookingPage() {
                             />
                           );
                         }}
-                      />
-                  </div>
-                )}
-                <ErrorMsg fied="eventDate"/>
+                      /> 
+                     {/* Legend */}
+                     <div style={{ display: "flex", gap: "12px", marginTop: "10px", fontSize: "12px", padding: "0 4px 4px", flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>                      
+                          <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "green", display: "inline-block", flexShrink: 0 }}></span>
+                          Available
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}> 
+                          <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "orange", display: "inline-block", flexShrink: 0 }}></span>
+                          Few slots left
+                        </div>       
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "red", display: "inline-block", flexShrink: 0 }}></span>
+                          Fully booked
+                        </div>
+                     </div>                   
+                   </div>
+                 )}
+                 <ErrorMsg field="eventDate"/>
                   
               </div>
 
@@ -451,6 +508,7 @@ export default function BookingPage() {
               <div className="text-center text-gray-500 py-16 border-2 border-dashed rounded-2xl"
                 style={{ borderColor: "#b5c4a1" }}>
                 <p className="text-lg mb-2">No menu items selected yet</p>
+                <p className="text-sm text-red-500 mb-2">Minimum 5 menu item required</p>
                 <p className="text-sm">Click "Add Menu Items" to browse our menu</p>
               </div>
             ) : (
@@ -477,7 +535,11 @@ export default function BookingPage() {
               <button onClick={() => goToStep(1)}
                 className="px-6 py-3 rounded-lg border font-medium transition-colors hover:bg-gray-50"
                 style={{ borderColor: "#2D5016", color: "#2D5016" }}>Back</button>
-              <button onClick={() => goToStep(3)}
+              <button onClick={() => {
+                if (validateStep2())
+                  goToStep(3);
+                }
+              }
                 className="px-10 py-3 rounded-lg text-white font-medium transition-opacity hover:opacity-90"
                 style={{ backgroundColor: "#2D5016" }}>Next</button>
             </div>
@@ -510,6 +572,7 @@ export default function BookingPage() {
               <h3 className="text-xl font-semibold mb-6" style={{ color: "#2D5016" }}>Selected Menu</h3>
               {formData.selectedMenu.length === 0 ? (
                 <p className="text-gray-500">No menu selected</p>
+
               ) : (
                 formData.selectedMenu.map((item, index) => (
                   <div key={index} className="mb-2">
@@ -542,7 +605,7 @@ export default function BookingPage() {
                 <div className="md:col-span-2">
                   <label className="block mb-2 text-gray-600">Phone Number <span className="text-red-500">*</span></label>
                   <input type="text" name="phone" value={formData.phone} onChange={handleChange}
-                    placeholder="10-digit phone number"
+                    placeholder="10-digit Indian mobile number"
                     className="w-full border rounded-lg p-3 focus:outline-none" style={inputStyle("phone")} />
                   <ErrorMsg field="phone" />
                 </div>

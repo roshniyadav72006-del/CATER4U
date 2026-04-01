@@ -26,7 +26,10 @@ export default function RootLayout({ children }) {
     pathname === "/login" ||
     pathname === "/register" ||
     pathname.startsWith("/admin") ||
+    pathname === "/profile" ||            // 👈 ADD
+    pathname === "/booking-success" || 
     pathname.startsWith("/admin_login");
+   
 
   // 🔹 ONLY footer hide on profile
   const hideFooter = pathname === "/profile";

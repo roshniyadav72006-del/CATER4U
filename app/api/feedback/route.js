@@ -35,3 +35,23 @@ export async function POST(req) {
     );
   }
 }
+// GET  👈 YEH ADD KARNA HAI
+// ==================
+export async function GET() {
+  try {
+    await connectDB();
+
+    const feedbacks = await Feedback.find({ status: "published" })
+      .sort({ createdAt: -1 });
+
+    return NextResponse.json(feedbacks);
+
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { success: false, message: "Error fetching feedback" },
+      { status: 500 }
+    );
+  }
+}

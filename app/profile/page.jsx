@@ -353,7 +353,7 @@ const styles = {
   page: {
     minHeight: "100vh", background: "#f1f5f9",
     fontFamily: "'Sora','Nunito',sans-serif",
-    paddingTop: "100px", paddingBottom: "60px",
+    paddingTop: "70x", paddingBottom: "60px",
     paddingLeft: "20px", paddingRight: "20px",
     position: "relative", overflow: "hidden",
   },

@@ -52,7 +52,7 @@ export default function BookingSuccessPage() {
           z-index: 10;
           background: #fff;
           border-radius: 32px;
-          padding: 64px 72px;
+          padding: 10px 10px;
           max-width: 560px;
           width: 90%;
           text-align: center;
@@ -75,7 +75,7 @@ export default function BookingSuccessPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 0 auto 32px;
+          margin: 0 auto 20px;
           opacity: 0;
           transform: scale(0.4);
           transition: opacity 0.5s 0.4s ease, transform 0.6s 0.4s cubic-bezier(0.34,1.56,0.64,1);

@@ -181,7 +181,7 @@ export default function Contact() {
                 <div>
                   <p className="text-gray-500">Phone</p>
                   <a href="tel:+917977419874" className="text-xl hover:text-[#6B8E23]">
-                    +91 98765 43210
+                    +91 7977419874
                   </a>
                 </div>
               </div>
@@ -194,7 +194,7 @@ export default function Contact() {
                     href="mailto:info@chandanicateringservices.com"
                     className="text-xl hover:text-[#6B8E23]"
                   >
-                    info@chandanicateringservices.com
+                    cater4u2025@gmail.com
                   </a>
                 </div>
               </div>

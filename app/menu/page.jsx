@@ -14,9 +14,9 @@ export default function MenuPage() {
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState("");
   const [showCategories, setShowCategories] = useState(false);
-  const categories = ["All", "Starter","Main Course",  "Dessert","Beverages","Chinese", "Dal","Rice","Nasta",
-           "Rajathani Special",
-           "Indain Breads",
+  const categories = ["All", "Starter","Main Course",  "Dessert","Beverages","Chinese", "Dal","Nasta",
+           "Rajasthani Special",
+           "Indian Breads",
            "Basmati ki Khushbu",
            "Mumbai Favourite"
            ];  // 🔥 NEW
@@ -212,10 +212,9 @@ export default function MenuPage() {
            "Beverages",
            "Chinese",
            "Dal",
-           "Rice",
            "Nasta",
-           "Rajathani Special",
-           "Indain Breads",
+           "Rajasthani Special",
+           "Indian Breads",
            "Basmati ki Khushbu",
            "Mumbai Favourite",
            

@@ -15,20 +15,11 @@
   
 }
 
-@theme inline {
-  --color-bg-0: var(--bg0);
-  --color-bg-1: var(--bg1);
-  --color-bg-2: var(--bg2);
-  --color-text-primary: var(--text-primary);
-  --color-text-muted: var(--text-muted);
-  --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+
 body {
   background: var(--bg0);
   color: var(--text-primary);
-  font-family: 'playfair display', Times, serif, Helvetica, sans-serif;
+  font-family: 'playfair display', Times, serif, Helvetica, sans-serif;
 }
 /*========================= */
 /* MORE CURVED OPEN BOOK */
@@ -87,4 +78,5 @@ body {
   z-index: 10;
 
 }
+
 

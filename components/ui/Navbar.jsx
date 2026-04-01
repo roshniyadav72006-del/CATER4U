@@ -10,10 +10,19 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [mobileDropdown, setMobileDropdown] = useState(false);
 
   const pathname = usePathname();
   const router = useRouter();
+  const [showDropdown, setShowDropdown] = useState(false);
   const isHome = pathname === "/";
+  const handleFeedbackClick = () => {
+   if (!isLoggedIn) {
+     router.push("/login");
+     } else {
+     router.push("/feedback");
+   }
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -82,7 +91,7 @@ export default function Navbar() {
          alt="Logo"
          width={120}
           height={120}
-            style={{ width: "auto", height: scrolled ? 56 : 112 }}
+            style={{ width: "auto", height: scrolled ? 56 : 140 }}
            className="logo-img transition-all duration-300"
            loading="eager"
            priority
@@ -104,14 +113,34 @@ export default function Navbar() {
           }`}
         >
           {/* DESKTOP MENU */}
-          <ul className={`hidden md:flex gap-12 ${textColor} text-xl font-medium`}>
+            <ul className={`hidden md:flex gap-12 ${textColor} font-medium text-2xl`}>
+                    
             <li><Link href="/" className="nav-link">Home</Link></li>
             <li><Link href="/about" className="nav-link">About</Link></li>
             <li><Link href="/contact" className="nav-link">Contact</Link></li>
             <li><Link href="/menu" className="nav-link">Menu</Link></li>
             <li><Link href="/booking" className="nav-link">Booking</Link></li>
-            <li><Link href="/feedback"className="nav-link" > Feedback</Link></li>
+            
+            <li className="relative group">
+              <span  
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="nav-link cursor-pointer">Feedback</span>
+              <div className="absolute hidden group-hover:block mt-2 rounded-xl 
+                bg-white/10 backdrop-blur-md text-white 
+                border border-white/20 shadow-lg min-w-[180px]">
+                <button
+                  onClick={handleFeedbackClick}
+                  className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
+                >
+                  Give Feesback
+                </button>
+                <button
+                 onClick={() => router.push("/reviews")}
+                 className="block w-full text-left px-4 py-2 text-black hover:bg-gray-200"
+                 > Reviews</button>
 
+              </div>
+            </li>  
             {/* ✅ AVATAR (DIRECT PROFILE) */}
             <li>
               {isLoggedIn ? (
@@ -146,7 +175,7 @@ export default function Navbar() {
 
         {/* MOBILE MENU */}
         {mobileOpen && (
-          <div className="md:hidden bg-black/90">
+          <div className="md:hidden bg-black/95 backdrop-blur-md">
             <ul className="flex flex-col items-center gap-4 py-6 text-white text-lg">
               <li><Link href="/">Home</Link></li>
               <li><Link href="/about">About</Link></li>
@@ -154,6 +183,35 @@ export default function Navbar() {
               <li><Link href="/menu">Menu</Link></li>
               <li><Link href="/booking">Booking</Link></li>
 
+              {/* ✅ DROPDOWN */}
+              <li className="flex flex-col items-center">
+                {/* CLICKABLE HEADER */}
+                <span
+                  onClick={() => setMobileDropdown(!mobileDropdown)}
+                  className="cursor-pointer text-yellow-400 font-semibold"
+                >
+                  Feedback ▾
+                </span>
+                {/* DROPDOWN OPTIONS */}
+                {mobileDropdown && (
+                  <div className="flex flex-col items-center gap-2 mt-2">
+                    <button
+                      onClick={handleFeedbackClick}
+                      className="text-sm px-4 py-2 rounded  text-white font-semibold"
+                    >
+                      Give Feedback
+                    </button>
+                    <button
+                      onClick={() => router.push("/reviews")}
+                      className="text-sm px-4 py-2 rounded  text-white font-semibold"
+                    >
+                      Reviews
+                    </button>
+                  </div>
+                )}
+              </li>
+
+              {/* LOGIN LOGIC */}
               {!isLoggedIn ? (
                 <>
                   <li><Link href="/login">Login</Link></li>
@@ -161,7 +219,12 @@ export default function Navbar() {
                 </>
               ) : (
                 <li>
-                  <Link href="/profile">Profile</Link>
+                  <span
+                    onClick={() => router.push("/profile")}
+                    className="cursor-pointer"
+                  >
+                    Profile
+                  </span>
                 </li>
               )}
             </ul>

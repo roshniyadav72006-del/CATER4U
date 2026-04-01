@@ -7,6 +7,8 @@ const statusConfig = {
   Completed: { bg: "#dcfce7", color: "#166534", label: "Completed" },
   confirmed: { bg: "#dbeafe", color: "#1e40af", label: "Confirmed" },
   Confirmed: { bg: "#dbeafe", color: "#1e40af", label: "Confirmed" },
+  approved:  { bg: "#dbeafe", color: "#1e40af", label: "Confirmed" },  // ✅ ADD THIS
+  Approved:  { bg: "#dbeafe", color: "#1e40af", label: "Confirmed" }, 
   pending:   { bg: "#fef9c3", color: "#854d0e", label: "Pending" },
   Pending:   { bg: "#fef9c3", color: "#854d0e", label: "Pending" },
   cancelled: { bg: "#fee2e2", color: "#991b1b", label: "Cancelled" },
@@ -34,13 +36,27 @@ export default function BookingsModal({ orders: initialOrders = [], onClose  , o
     bookingFilter === "All"
       ? orders
       : orders.filter(
-          (o) => o.status?.toLowerCase() === bookingFilter.toLowerCase()
+          (o) =>{
+            const status = o.status?.toLowerCase();
+             if (bookingFilter === "Confirmed") {
+               return status === "approved" || status === "confirmed";
+            }
+            return status === bookingFilter.toLowerCase();
+          } 
         );
 
-  const getCount = (f) =>
-    f === "All"
-      ? orders.length
-      : orders.filter((o) => o.status?.toLowerCase() === f.toLowerCase()).length;
+  const getCount = (f) =>{
+     if (f === "All") return orders.length;
+     return orders.filter((o) => {
+      const status = o.status?.toLowerCase();
+       if (f === "Confirmed") {
+        return status === "approved" || status === "confirmed";
+      }
+      return status === f.toLowerCase();
+
+    }).length
+            
+  };
 
   // ── CANCEL HANDLER ──
   const handleCancel = async () => {

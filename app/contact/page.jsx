@@ -4,19 +4,19 @@ import { Phone, Mail, MapPin, Clock } from "lucide-react";
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gray-100 px-6 py-16">
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-8">
+    <div className="min-h-screen bg-gray-100 px-4 py-24 md:px-6 md:py-16">
+     <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-5 md:p-8">
 
         <div className="grid md:grid-cols-2 gap-10">
 
           {/* LEFT SIDE - CONTACT INFO */}
           <div>
-            <h2 className="text-3xl font-bold mb-4">Contact Information</h2>
-            <p className="text-gray-600 mb-6">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Contact Information</h2>
+           <p className="text-gray-600 mb-5 md:mb-6 text-sm md:text-base leading-relaxed">
               We'd love to hear from you! Reach out to us for any catering inquiries.
             </p>
 
-            <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
 
               {/* Phone */}
               <div className="flex items-start gap-4">
