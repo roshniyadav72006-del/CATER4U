@@ -25,8 +25,7 @@ export default function RootLayout({ children }) {
   const hideLayout =
     pathname === "/login" ||
     pathname === "/register" ||
-    pathname.startsWith("/admin") ||
-    pathname === "/profile" ||            // 👈 ADD
+    pathname.startsWith("/admin") ||    
     pathname === "/booking-success" || 
     pathname.startsWith("/admin_login");
    

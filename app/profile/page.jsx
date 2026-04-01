@@ -142,7 +142,6 @@ export default function ProfilePage() {
             fetchBookings();
           }}
           onCancelSuccess={fetchBookings}
-
         />
       )}
 
@@ -353,7 +352,8 @@ const styles = {
   page: {
     minHeight: "100vh", background: "#f1f5f9",
     fontFamily: "'Sora','Nunito',sans-serif",
-    paddingTop: "70x", paddingBottom: "60px",
+    paddingTop: "160px",  // ✅ Logo ke niche content push kiya (140px logo + gap)
+    paddingBottom: "60px",
     paddingLeft: "20px", paddingRight: "20px",
     position: "relative", overflow: "hidden",
   },
