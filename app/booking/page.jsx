@@ -350,6 +350,11 @@ export default function BookingPage() {
                   <option>Birthday</option>
                   <option>Corporate</option>
                   <option>Engagement</option>
+                  <option>Aniversary</option>
+                  <option>Religious Ceremony</option>
+                  <option>Outdoor Picnic</option>
+                  
+                  
                 </select>
                 <ErrorMsg field="eventType" />
               </div>

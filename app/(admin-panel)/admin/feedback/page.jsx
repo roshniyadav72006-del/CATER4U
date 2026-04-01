@@ -59,18 +59,17 @@ export default function AdminFeedback() {
 
   if (!stats)
     return (
-      <>
-        <div className="af-loading">
-          <div className="af-spinner" />
-          Loading feedback…
-        </div>
-      </>
+      <div className="af-loading">
+        <div className="af-spinner" />
+        Loading feedback…
+      </div>
     );
 
   return (
     <>
       <div className="af-root">
-        {/* Header */}
+
+        {/* ── Header ── */}
         <div className="af-header">
           <div className="af-header-icon">🌿</div>
           <div>
@@ -79,15 +78,15 @@ export default function AdminFeedback() {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* ── Stats ── */}
         <div className="af-stats">
-          <StatCard title="Average Rating" value={stats.avgRating} />
+          <StatCard title="Avg Rating" value={stats.avgRating} />
           <StatCard title="Total Reviews" value={stats.total} />
           <StatCard title="Pending" value={stats.pending} />
           <StatCard title="Published" value={stats.published} />
         </div>
 
-        {/* Rating Distribution */}
+        {/* ── Rating Distribution ── */}
         <div className="af-dist">
           <h2>Rating Distribution</h2>
           {[5, 4, 3, 2, 1].map((star) => (
@@ -106,8 +105,9 @@ export default function AdminFeedback() {
           ))}
         </div>
 
-        {/* Filters */}
+        {/* ── Filters ── */}
         <div className="af-filters">
+          {/* Search — full width on mobile */}
           <div className="af-search-wrap">
             <span className="af-search-icon">🔍</span>
             <input
@@ -118,56 +118,71 @@ export default function AdminFeedback() {
               className="af-input"
             />
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="af-select"
-          >
-            <option value="">All Status</option>
-            <option value="published">Published</option>
-            <option value="pending">Pending</option>
-          </select>
-          <select
-            value={ratingFilter}
-            onChange={(e) => setRatingFilter(e.target.value)}
-            className="af-select"
-          >
-            <option value="">All Ratings</option>
-            <option value="5">5 ⭐</option>
-            <option value="4">4 ⭐</option>
-            <option value="3">3 ⭐</option>
-            <option value="2">2 ⭐</option>
-            <option value="1">1 ⭐</option>
-          </select>
+          {/* Selects — side by side row on mobile */}
+          <div className="af-filters-selects">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="af-select"
+            >
+              <option value="">All Status</option>
+              <option value="published">Published</option>
+              <option value="pending">Pending</option>
+            </select>
+            <select
+              value={ratingFilter}
+              onChange={(e) => setRatingFilter(e.target.value)}
+              className="af-select"
+            >
+              <option value="">All Ratings</option>
+              <option value="5">5 ⭐</option>
+              <option value="4">4 ⭐</option>
+              <option value="3">3 ⭐</option>
+              <option value="2">2 ⭐</option>
+              <option value="1">1 ⭐</option>
+            </select>
+          </div>
         </div>
 
-        {/* Feedback List */}
+        {/* ── Feedback List ── */}
         <div className="af-list">
           {feedbacks.map((f) => (
             <div key={f._id} className="af-item">
+
+              {/* Header row */}
               <div className="af-item-header">
                 <div>
                   <p className="af-item-name">{f.name}</p>
                   <p className="af-item-service">{f.service}</p>
                 </div>
-                <span className={`af-badge ${f.status === "published" ? "af-badge-published" : "af-badge-pending"}`}>
+                <span
+                  className={`af-badge ${
+                    f.status === "published" ? "af-badge-published" : "af-badge-pending"
+                  }`}
+                >
                   {f.status}
                 </span>
               </div>
 
+              {/* Stars + Date */}
               <div className="af-item-meta">
                 <span className="af-stars">{"⭐".repeat(f.rating)}</span>
-                <span className="af-date">{new Date(f.createdAt).toLocaleDateString()}</span>
+                <span className="af-date">
+                  {new Date(f.createdAt).toLocaleDateString()}
+                </span>
               </div>
 
+              {/* Comment */}
               <p className="af-comment">{f.comment}</p>
 
+              {/* Admin response (if exists) */}
               {f.adminResponse && (
                 <div className="af-admin-resp">
                   <b>Admin Response: </b>{f.adminResponse}
                 </div>
               )}
 
+              {/* Action buttons */}
               <div className="af-actions">
                 <button
                   onClick={() => {
@@ -204,43 +219,61 @@ export default function AdminFeedback() {
                   <div className="af-respond-actions">
                     <button
                       className="af-btn-cancel-sm"
-                      onClick={() => { setOpenResponseId(null); setResponseText(""); }}
+                      onClick={() => {
+                        setOpenResponseId(null);
+                        setResponseText("");
+                      }}
                     >
                       Cancel
                     </button>
-                    <button className="af-btn-send" onClick={() => sendResponse(f._id)}>
+                    <button
+                      className="af-btn-send"
+                      onClick={() => sendResponse(f._id)}
+                    >
                       Send Response
                     </button>
                   </div>
                 </div>
               )}
+
             </div>
           ))}
         </div>
 
-        {/* Delete Modal */}
+        {/* ── Delete Confirmation Modal ── */}
         {deleteId && (
           <div className="af-overlay">
             <div className="af-modal">
               <div className="af-modal-icon">⚠️</div>
               <h2>Delete Feedback?</h2>
-              <p>This action cannot be undone. The feedback will be permanently removed.</p>
+              <p>
+                This action cannot be undone. The feedback will be permanently
+                removed.
+              </p>
               <div className="af-modal-btns">
-                <button className="af-btn-modal-cancel" onClick={() => setDeleteId(null)}>
+                <button
+                  className="af-btn-modal-cancel"
+                  onClick={() => setDeleteId(null)}
+                >
                   Cancel
                 </button>
-                <button className="af-btn-modal-delete" onClick={deleteFeedback}>
+                <button
+                  className="af-btn-modal-delete"
+                  onClick={deleteFeedback}
+                >
                   Delete
                 </button>
               </div>
             </div>
           </div>
         )}
+
       </div>
     </>
   );
 }
 
+/* ── Stat Card Sub-component ── */
 function StatCard({ title, value }) {
   return (
     <div className="af-card">

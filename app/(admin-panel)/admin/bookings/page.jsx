@@ -58,10 +58,159 @@ export default function AdminBookings() {
 
   return (
     <div style={s.page}>
+      <style>{`
+        * { box-sizing: border-box; }
+
+        /* ── Stat cards: 1 col mobile → 3 col desktop ── */
+        .bk-card-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+        @media (min-width: 480px) {
+          .bk-card-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* ── Toolbar: stack on mobile ── */
+        .bk-toolbar {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+        @media (min-width: 600px) {
+          .bk-toolbar { flex-direction: row; }
+        }
+        .bk-search {
+          flex: 1;
+          padding: 10px 16px;
+          border: 1px solid #D6D3C0;
+          border-radius: 8px;
+          background: #fff;
+          color: #2C2C1E;
+          font-size: 14px;
+          outline: none;
+          width: 100%;
+        }
+        .bk-select {
+          padding: 10px 14px;
+          border: 1px solid #D6D3C0;
+          border-radius: 8px;
+          background: #273B09;
+          color: #fff;
+          font-size: 14px;
+          outline: none;
+          cursor: pointer;
+          width: 100%;
+        }
+        @media (min-width: 600px) {
+          .bk-select { width: auto; }
+        }
+
+        /* ── Table: hidden on mobile ── */
+        .bk-table-wrap {
+          background: #fff;
+          border-radius: 12px;
+          border: 1px solid #E8E5D4;
+          overflow-x: auto;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        @media (max-width: 700px) {
+          .bk-table-wrap { display: none; }
+        }
+
+        /* ── Mobile cards: hidden on desktop ── */
+        .bk-mobile-list {
+          display: none;
+          flex-direction: column;
+          gap: 12px;
+        }
+        @media (max-width: 700px) {
+          .bk-mobile-list { display: flex; }
+        }
+
+        .bk-card {
+          background: #fff;
+          border-radius: 14px;
+          border: 1px solid #E8E5D4;
+          padding: 16px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .bk-card-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 10px;
+        }
+        .bk-card-name {
+          font-size: 15px;
+          font-weight: 700;
+          color: #2C2C1E;
+          font-family: Georgia, serif;
+        }
+        .bk-card-id {
+          font-size: 11px;
+          color: #9A9580;
+          font-family: monospace;
+          margin-top: 2px;
+        }
+        .bk-card-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+        .bk-card-meta-item {
+          font-size: 12px;
+          color: #6B6A5E;
+          background: #F5F3E4;
+          padding: 4px 10px;
+          border-radius: 20px;
+          border: 1px solid #E8E5D4;
+        }
+        .bk-card-actions {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          padding-top: 10px;
+          border-top: 1px solid #F0EFE6;
+        }
+
+        /* ── Modal responsive ── */
+        .bk-overlay {
+          position: fixed; inset: 0;
+          background: rgba(30,28,20,0.5);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 1000;
+          padding: 16px;
+        }
+        .bk-modal {
+          background: #fff;
+          border-radius: 14px;
+          border: 1px solid #E8E5D4;
+          padding: 22px;
+          width: 100%;
+          max-width: 440px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 16px 48px rgba(0,0,0,0.14);
+        }
+
+        /* ── Page title responsive ── */
+        .bk-title {
+          font-size: clamp(20px, 5vw, 32px);
+          font-weight: 800;
+          color: #2C2C1E;
+          font-family: Georgia, serif;
+          margin: 0;
+          line-height: 1.2;
+        }
+      `}</style>
 
       {/* ── Header ── */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={s.pageTitle}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 className="bk-title">
           Approve /{" "}
           <span style={{ color: "#7A8C3A" }}>Reject Bookings</span>
         </h1>
@@ -72,51 +221,27 @@ export default function AdminBookings() {
       </div>
 
       {/* ── Stat Cards ── */}
-      <div style={s.cardGrid}>
-        <StatCard
-          icon="⏳"
-          label="PENDING REQUESTS"
-          count={pendingCount}
-          sub="Awaiting confirmation"
-          accentColor="#B8860B"
-          iconBg="#FFF8E7"
-          borderColor="#B8860B"
-        />
-        <StatCard
-          icon="✓"
-          label="APPROVED"
-          count={approvedCount}
-          sub="Successfully booked"
-          accentColor="#4A6741"
-          iconBg="#EEF3E8"
-          borderColor="#4A6741"
-        />
-        <StatCard
-          icon="✕"
-          label="REJECTED"
-          count={rejectedCount}
-          sub="Cancelled bookings"
-          accentColor="#9B2335"
-          iconBg="#FDECEA"
-          borderColor="#9B2335"
-        />
+      <div className="bk-card-grid">
+        <StatCard icon="⏳" label="PENDING REQUESTS" count={pendingCount}  sub="Awaiting confirmation" accentColor="#B8860B" iconBg="#FFF8E7" borderColor="#B8860B" />
+        <StatCard icon="✓"  label="APPROVED"         count={approvedCount} sub="Successfully booked"  accentColor="#4A6741" iconBg="#EEF3E8" borderColor="#4A6741" />
+        <StatCard icon="✕"  label="REJECTED"         count={rejectedCount} sub="Cancelled bookings"   accentColor="#9B2335" iconBg="#FDECEA" borderColor="#9B2335" />
       </div>
 
       {/* ── Toolbar ── */}
-      <div style={s.toolbar}>
+      <div className="bk-toolbar">
         <input
           type="text"
-          placeholder="Search by customer name or booking ID..."
+          placeholder="Search by name or booking ID..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={s.searchInput}
+          className="bk-search"
           onFocus={e => (e.target.style.borderColor = "#7A8C3A")}
           onBlur={e  => (e.target.style.borderColor = "#D6D3C0")}
         />
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          style={s.select}
+          className="bk-select"
         >
           <option value="all">All Status</option>
           <option value="pending">Pending</option>
@@ -127,11 +252,11 @@ export default function AdminBookings() {
         </select>
       </div>
 
-      {/* ── Table ── */}
-      <div style={s.tableWrap}>
-        <table style={s.table}>
+      {/* ── DESKTOP: Table ── */}
+      <div className="bk-table-wrap">
+        <table style={{ width:"100%", borderCollapse:"collapse" }}>
           <thead>
-            <tr style={s.theadRow}>
+            <tr style={{ backgroundColor:"#273B09" }}>
               {["Booking ID","Customer","Event Type","Date","Guests","Status","Actions"].map(h => (
                 <th key={h} style={s.th}>{h}</th>
               ))}
@@ -139,9 +264,7 @@ export default function AdminBookings() {
           </thead>
           <tbody>
             {filteredBookings.length === 0 ? (
-              <tr>
-                <td colSpan={7} style={s.emptyCell}>No bookings found</td>
-              </tr>
+              <tr><td colSpan={7} style={s.emptyCell}>No bookings found</td></tr>
             ) : filteredBookings.map((b, i) => (
               <tr
                 key={b._id}
@@ -149,29 +272,19 @@ export default function AdminBookings() {
                 onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#F2F5E8")}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = i % 2 === 0 ? "#fff" : "#FAFAF5")}
               >
-                <td style={{ ...s.td, fontFamily:"monospace", fontSize:12, color:"#9A9580" }}>
-                  {b.bookingId || "-"}
-                </td>
+                <td style={{ ...s.td, fontFamily:"monospace", fontSize:12, color:"#9A9580" }}>{b.bookingId || "-"}</td>
                 <td style={{ ...s.td, fontWeight:600, color:"#2C2C1E" }}>{b.fullName}</td>
                 <td style={s.td}>{b.eventType}</td>
-                <td style={s.td}>
-                  {new Date(b.eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}
-                </td>
+                <td style={s.td}>{new Date(b.eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}</td>
                 <td style={{ ...s.td, textAlign:"center" }}>{b.guests}</td>
                 <td style={s.td}><StatusBadge status={b.status} /></td>
                 <td style={s.td}>
                   <div style={{ display:"flex", gap:6, flexWrap:"wrap", alignItems:"center" }}>
-                    <button style={s.btnView} onClick={() => setSelectedBooking(b)}>
-                      View Details
-                    </button>
+                    <button style={s.btnView} onClick={() => setSelectedBooking(b)}>View Details</button>
                     {b.status === "pending" && (
                       <>
-                        <button style={s.btnApprove} onClick={() => updateStatus(b._id, "approved")}>
-                          Approve
-                        </button>
-                        <button style={s.btnReject} onClick={() => updateStatus(b._id, "rejected")}>
-                          Reject
-                        </button>
+                        <button style={s.btnApprove} onClick={() => updateStatus(b._id, "approved")}>Approve</button>
+                        <button style={s.btnReject}  onClick={() => updateStatus(b._id, "rejected")}>Reject</button>
                       </>
                     )}
                   </div>
@@ -182,24 +295,55 @@ export default function AdminBookings() {
         </table>
       </div>
 
+      {/* ── MOBILE: Cards ── */}
+      <div className="bk-mobile-list">
+        {filteredBookings.length === 0 ? (
+          <p style={{ textAlign:"center", color:"#B0AFA4", fontSize:14, padding:"32px 0" }}>No bookings found</p>
+        ) : filteredBookings.map((b) => (
+          <div key={b._id} className="bk-card">
+            <div className="bk-card-row">
+              <div>
+                <div className="bk-card-name">{b.fullName}</div>
+                <div className="bk-card-id">{b.bookingId || "-"}</div>
+              </div>
+              <StatusBadge status={b.status} />
+            </div>
+
+            <div className="bk-card-meta">
+              <span className="bk-card-meta-item">🎉 {b.eventType}</span>
+              <span className="bk-card-meta-item">
+                📅 {new Date(b.eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
+              </span>
+              <span className="bk-card-meta-item">👥 {b.guests} guests</span>
+            </div>
+
+            <div className="bk-card-actions">
+              <button style={s.btnView} onClick={() => setSelectedBooking(b)}>View Details</button>
+              {b.status === "pending" && (
+                <>
+                  <button style={s.btnApprove} onClick={() => updateStatus(b._id, "approved")}>Approve</button>
+                  <button style={s.btnReject}  onClick={() => updateStatus(b._id, "rejected")}>Reject</button>
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* ── Modal ── */}
       {selectedBooking && (
-        <div style={s.overlay}>
-          <div style={s.modal}>
-            {/* Modal Header */}
-            <div style={{ borderBottom:"1px solid #E8E5D4", paddingBottom:16, marginBottom:16, display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+        <div className="bk-overlay">
+          <div className="bk-modal">
+            <div style={{ borderBottom:"1px solid #E8E5D4", paddingBottom:14, marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10 }}>
               <div>
-                <h2 style={{ fontSize:20, fontWeight:700, color:"#2C2C1E", fontFamily:"Georgia, serif", margin:0 }}>
+                <h2 style={{ fontSize:18, fontWeight:700, color:"#2C2C1E", fontFamily:"Georgia, serif", margin:0 }}>
                   Booking Details
                 </h2>
-                <p style={{ fontSize:12, color:"#9A9580", marginTop:4 }}>
-                  {selectedBooking.bookingId || "-"}
-                </p>
+                <p style={{ fontSize:11, color:"#9A9580", marginTop:3 }}>{selectedBooking.bookingId || "-"}</p>
               </div>
               <StatusBadge status={selectedBooking.status} />
             </div>
 
-            {/* Modal Rows */}
             {[
               ["Name",   selectedBooking.fullName],
               ["Email",  selectedBooking.email],
@@ -214,21 +358,14 @@ export default function AdminBookings() {
               </div>
             ))}
 
-            {/* Modal Footer */}
-            <div style={{ display:"flex", justifyContent:"flex-end", gap:8, marginTop:20, paddingTop:16, borderTop:"1px solid #E8E5D4" }}>
+            <div style={{ display:"flex", justifyContent:"flex-end", gap:8, marginTop:18, paddingTop:14, borderTop:"1px solid #E8E5D4", flexWrap:"wrap" }}>
               {selectedBooking.status === "pending" && (
                 <>
-                  <button style={s.btnApprove} onClick={() => updateStatus(selectedBooking._id, "approved")}>
-                    Approve
-                  </button>
-                  <button style={s.btnReject} onClick={() => updateStatus(selectedBooking._id, "rejected")}>
-                    Reject
-                  </button>
+                  <button style={s.btnApprove} onClick={() => updateStatus(selectedBooking._id, "approved")}>Approve</button>
+                  <button style={s.btnReject}  onClick={() => updateStatus(selectedBooking._id, "rejected")}>Reject</button>
                 </>
               )}
-              <button style={s.btnClose} onClick={() => setSelectedBooking(null)}>
-                Close
-              </button>
+              <button style={s.btnClose} onClick={() => setSelectedBooking(null)}>Close</button>
             </div>
           </div>
         </div>
@@ -240,25 +377,18 @@ export default function AdminBookings() {
 // ── StatCard ──
 const StatCard = ({ icon, label, count, sub, accentColor, iconBg, borderColor }) => (
   <div style={{
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    border: "1px solid #E8E5D4",
-    borderTop: `3px solid ${borderColor}`,
-    padding: "20px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
+    backgroundColor: "#fff", borderRadius: 12,
+    border: "1px solid #E8E5D4", borderTop: `3px solid ${borderColor}`,
+    padding: "18px 20px", display: "flex", flexDirection: "column", gap: 8,
   }}>
     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-      <span style={{ fontSize:11, fontWeight:600, letterSpacing:"0.08em", color:"#9A9580" }}>{label}</span>
-      <div style={{ width:36, height:36, borderRadius:8, backgroundColor:iconBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>
+      <span style={{ fontSize:10, fontWeight:600, letterSpacing:"0.08em", color:"#9A9580" }}>{label}</span>
+      <div style={{ width:34, height:34, borderRadius:8, backgroundColor:iconBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15 }}>
         {icon}
       </div>
     </div>
-    <div style={{ fontSize:36, fontWeight:700, color:accentColor, fontFamily:"Georgia, serif", lineHeight:1 }}>
-      {count}
-    </div>
-    <div style={{ fontSize:12, color:"#9A9580" }}>{sub}</div>
+    <div style={{ fontSize:32, fontWeight:700, color:accentColor, fontFamily:"Georgia, serif", lineHeight:1 }}>{count}</div>
+    <div style={{ fontSize:11, color:"#9A9580" }}>{sub}</div>
   </div>
 );
 
@@ -277,6 +407,7 @@ const StatusBadge = ({ status }) => {
       display:"inline-block", padding:"4px 12px", borderRadius:20,
       fontSize:11, fontWeight:600, letterSpacing:"0.05em",
       backgroundColor:st.bg, color:st.color, border:`1px solid ${st.border}`,
+      whiteSpace:"nowrap",
     }}>
       {status?.charAt(0).toUpperCase() + status?.slice(1)}
     </span>
@@ -286,108 +417,54 @@ const StatusBadge = ({ status }) => {
 // ── Styles ──
 const s = {
   page: {
-    padding: "28px 32px",
+    padding: "16px",
     backgroundColor: "#FFF8DC",
     minHeight: "100vh",
     fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
+    overflowX: "hidden",
   },
-  pageTitle: {
-    fontSize: 32,
-    fontWeight: 800,
-    color: "#2C2C1E",
-    fontFamily: "Georgia, serif",
-    margin: 0,
-  },
-  pageSub:  { fontSize:14, color:"#6B6A5E", marginTop:6 },
-  dateText: { fontSize:12, color:"#9A9580", marginTop:2 },
+  pageSub:  { fontSize:13, color:"#6B6A5E", marginTop:5 },
+  dateText: { fontSize:11, color:"#9A9580", marginTop:2 },
 
-  cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: 16,
-    marginBottom: 24,
-  },
-
-  toolbar: { display:"flex", gap:10, marginBottom:16 },
-  searchInput: {
-    flex:1, padding:"10px 16px",
-    border:"1px solid #D6D3C0", borderRadius:8,
-    backgroundColor:"#fff", color:"#2C2C1E",
-    fontSize:14, outline:"none",
-    fontFamily:"inherit",
-  },
-  select: {
-    padding:"10px 14px",
-    border:"1px solid #D6D3C0", borderRadius:8,
-    backgroundColor:"#273B09", color:"#fff",
-    fontSize:14, outline:"none", cursor:"pointer",
-    fontFamily:"inherit",
-  },
-
-  tableWrap: {
-    backgroundColor:"#fff",
-    borderRadius:12,
-    border:"1px solid #E8E5D4",
-    overflow:"hidden",
-    boxShadow:"0 2px 12px rgba(0,0,0,0.04)",
-  },
-  table: { width:"100%", borderCollapse:"collapse" },
-
-  theadRow: { backgroundColor: "#273B09" },
   th: {
-  padding: "13px 16px",
-  fontSize: 11, fontWeight: 600, color: "#E8E5D4",  // ← golden
-  textAlign: "left", letterSpacing: "0.07em", textTransform: "uppercase",
-  borderBottom: "1px solid #2c4508",},
+    padding:"12px 14px", fontSize:11, fontWeight:600,
+    color:"#E8E5D4", textAlign:"left", letterSpacing:"0.07em",
+    textTransform:"uppercase", borderBottom:"1px solid #2c4508",
+    whiteSpace:"nowrap",
+  },
   td: {
-    padding:"14px 16px",
-    fontSize:13, color:"#3C3B2E",
-    borderBottom:"1px solid #F0EFE6",
-    verticalAlign:"middle",
+    padding:"13px 14px", fontSize:13, color:"#3C3B2E",
+    borderBottom:"1px solid #F0EFE6", verticalAlign:"middle",
   },
   tr: { transition:"background 0.12s" },
   emptyCell: { textAlign:"center", padding:48, color:"#B0AFA4", fontSize:14 },
 
   btnView: {
     padding:"5px 12px", borderRadius:6,
-    border:"1px solid #C8D8F0",
-    backgroundColor:"#EBF2FB", color:"#2E5FA3",
-    fontSize:12, cursor:"pointer", fontWeight:500,
+    border:"1px solid #C8D8F0", backgroundColor:"#EBF2FB", color:"#2E5FA3",
+    fontSize:12, cursor:"pointer", fontWeight:500, whiteSpace:"nowrap",
   },
   btnApprove: {
     padding:"5px 12px", borderRadius:6,
-    border:"1px solid #B8CEA8",
-    backgroundColor:"#EEF3E8", color:"#4A6741",
-    fontSize:12, cursor:"pointer", fontWeight:500,
+    border:"1px solid #B8CEA8", backgroundColor:"#EEF3E8", color:"#4A6741",
+    fontSize:12, cursor:"pointer", fontWeight:500, whiteSpace:"nowrap",
   },
   btnReject: {
     padding:"5px 12px", borderRadius:6,
-    border:"1px solid #F5B8BE",
-    backgroundColor:"#FDECEA", color:"#9B2335",
-    fontSize:12, cursor:"pointer", fontWeight:500,
+    border:"1px solid #F5B8BE", backgroundColor:"#FDECEA", color:"#9B2335",
+    fontSize:12, cursor:"pointer", fontWeight:500, whiteSpace:"nowrap",
   },
   btnClose: {
-    padding:"8px 20px", borderRadius:8,
-    border:"1px solid #D6D3C0",
-    backgroundColor:"#F5F3E4", color:"#3C3B2E",
+    padding:"8px 18px", borderRadius:8,
+    border:"1px solid #D6D3C0", backgroundColor:"#F5F3E4", color:"#3C3B2E",
     fontSize:13, cursor:"pointer", fontWeight:500,
   },
 
-  overlay: {
-    position:"fixed", inset:0,
-    background:"rgba(30,28,20,0.5)",
-    display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000,
-  },
-  modal: {
-    backgroundColor:"#fff", borderRadius:14,
-    border:"1px solid #E8E5D4",
-    padding:28, width:440, maxWidth:"95vw",
-    boxShadow:"0 16px 48px rgba(0,0,0,0.14)",
-  },
   modalRow: {
     display:"flex", justifyContent:"space-between", alignItems:"center",
-    padding:"10px 0", borderBottom:"1px solid #F0EFE6", fontSize:13,
+    padding:"9px 0", borderBottom:"1px solid #F0EFE6", fontSize:13,
+    gap:10,
   },
-  modalLabel: { color:"#9A9580", fontSize:13 },
-  modalValue: { color:"#2C2C1E", fontWeight:500, textAlign:"right", maxWidth:"65%" },
+  modalLabel: { color:"#9A9580", fontSize:13, flexShrink:0 },
+  modalValue: { color:"#2C2C1E", fontWeight:500, textAlign:"right", wordBreak:"break-word" },
 };
