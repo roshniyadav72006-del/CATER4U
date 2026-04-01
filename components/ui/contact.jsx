@@ -191,7 +191,7 @@ export default function Contact() {
                 <div>
                   <p className="text-gray-500">Email</p>
                   <a
-                    href="mailto:info@chandanicateringservices.com"
+                    href="mailto:info@services.com"
                     className="text-xl hover:text-[#6B8E23]"
                   >
                     cater4u2025@gmail.com

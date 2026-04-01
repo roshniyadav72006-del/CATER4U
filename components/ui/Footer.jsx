@@ -145,8 +145,8 @@ export default function Footer() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "28px" }}>
             {[
-              { icon: <Phone size={14} />, text: "+91 98765 43210" },
-              { icon: <Mail size={14} />, text: "info@chandanicateringservices.com" },
+              { icon: <Phone size={14} />, text: "+91 7977419874" },
+              { icon: <Mail size={14} />, text: "cater4u2025@gmail.com" },
               { icon: <MapPin size={14} />, text: "Mumbai, Maharashtra" },
             ].map(({ icon, text }) => (
               <div key={text} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
