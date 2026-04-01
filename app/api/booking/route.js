@@ -359,3 +359,4 @@ export async function PATCH(req) {
       { status: 500 }
     );
   }
+}
