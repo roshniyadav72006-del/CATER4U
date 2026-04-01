@@ -39,5 +39,6 @@ export default function ChartSection({ data }) {
       </LineChart>
      </ResponsiveContainer>
    </div>
+
   );
 }

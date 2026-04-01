@@ -149,7 +149,7 @@ export default function Home() {
           {/* Big centered image */}
           <div className="relative w-full max-w-3xl h-[480px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1774555265/homepage.png"
+              src="https://res.cloudinary.com/dpgubcyaq/image/upload/v1775017656/homepage_u2iwvs.jpg"
               alt="Indian spices"
               fill
               sizes="(max-width: 768px) 100vw, 800px"

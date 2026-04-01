@@ -24,10 +24,10 @@ const C = {
 const galleryImages = [
   { src: "/about1.jpeg", label: "Grand Buffet" },
   { src: "/about2.jpeg", label: "Gourmet Starters" },
-  { src: "/about3.jpg",  label: "Fine Dining Setup" },
+  { src: "https://res.cloudinary.com/dpgubcyaq/image/upload/v1775018064/about3_xmt657.jpg",  label: "Fine Dining Setup" },
   { src: "/about4.jpg",  label: "Chef's Special" },
 ];
-const chefImage = "/about3.jpg";
+const chefImage = "https://res.cloudinary.com/dpgubcyaq/image/upload/v1775018064/about3_xmt657.jpg";
 
 const stats = [
   { number: "500+", label: "Events Catered", icon: "🎉" },

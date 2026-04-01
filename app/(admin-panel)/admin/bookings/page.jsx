@@ -1,393 +1,495 @@
 "use client";
+
 import { useEffect, useState } from "react";
+import ChartSection from "./components/ChartSection";
+import { useRouter } from "next/navigation";
+import { XCircle } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  CalendarCheck,
+  IndianRupee,
+  TrendingUp,
+  Activity,
+  Users,
+} from "lucide-react";
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-export default function AdminBookings() {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedBooking, setSelectedBooking] = useState(null);
+const PIE_COLORS = ["#8B9D3A", "#C9A84C", "#6B7A2A", "#E2C06A", "#A8B560"];
 
-  const fetchBookings = async () => {
-    try {
-      const res = await fetch("/api/admin/bookings");
-      if (!res.ok) throw new Error("Failed to fetch bookings");
-      const data = await res.json();
-      setBookings(data);
-    } catch (err) {
-      console.error("Fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
+const eventDistributionData = [
+  { name: "Wedding", value: 45 },
+  { name: "Corporate", value: 25 },
+  { name: "Birthday", value: 15 },
+  { name: "Anniversary", value: 5 },
+  { name: "Other", value: 10 },
+];
+
+function StatusBadge({ status }) {
+  const s = status?.toLowerCase();
+  const styles = {
+    ongoing:   { bg: "#e8f0d0", color: "#4a6320", border: "#b5c97a" },
+    confirmed: { bg: "#fdf6dc", color: "#7a5c0a", border: "#e2c06a" },
+    preparing: { bg: "#f5f0d8", color: "#6b5a1a", border: "#c9a84c" },
+    pending:   { bg: "#fef9e7", color: "#856404", border: "#d4a843" },
+    cancelled: { bg: "#fde8e8", color: "#9b1c1c", border: "#f4a4a4" },
+    completed: { bg: "#f3f4f0", color: "#5a5a4a", border: "#c8c8a8" },
   };
-
-  useEffect(() => { fetchBookings(); }, []);
-
-  const updateStatus = async (id, status) => {
-    try {
-      const res = await fetch(`/api/admin/bookings/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
-      if (!res.ok) { console.error("Server Error:", data.error); return; }
-      setTimeout(() => { setSelectedBooking(null); fetchBookings(); }, 300);
-    } catch (err) {
-      console.error("Update status error:", err.message);
-    }
+  const dotColor = {
+    ongoing: "#6b8f2a", confirmed: "#c9a84c", preparing: "#a07830",
+    pending: "#c9a000", cancelled: "#dc2626", completed: "#9a9a7a",
   };
-
-  if (loading) return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", backgroundColor:"#F5F3E4" }}>
-      <p style={{ color:"#5C6B2E", fontSize:15, fontFamily:"Georgia, serif" }}>Loading bookings...</p>
-    </div>
-  );
-
-  const pendingCount  = bookings.filter(b => b.status?.toLowerCase() === "pending").length;
-  const approvedCount = bookings.filter(b => ["approved","confirmed"].includes(b.status?.toLowerCase())).length;
-  const rejectedCount = bookings.filter(b => ["cancelled","rejected"].includes(b.status?.toLowerCase())).length;
-
-  const filteredBookings = bookings.filter(b => {
-    const matchesSearch =
-      b.fullName.toLowerCase().includes(search.toLowerCase()) ||
-      (b.bookingId && b.bookingId.toLowerCase().includes(search.toLowerCase()));
-    const matchesStatus = statusFilter === "all" || b.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
+  const st = styles[s] || styles.pending;
   return (
-    <div style={s.page}>
-
-      {/* ── Header ── */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={s.pageTitle}>
-          Approve /{" "}
-          <span style={{ color: "#7A8C3A" }}>Reject Bookings</span>
-        </h1>
-        <p style={s.pageSub}>Review and manage incoming booking requests</p>
-        <p style={s.dateText}>
-          {new Date().toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long", year:"numeric" })}
-        </p>
-      </div>
-
-      {/* ── Stat Cards ── */}
-      <div style={s.cardGrid}>
-        <StatCard
-          icon="⏳"
-          label="PENDING REQUESTS"
-          count={pendingCount}
-          sub="Awaiting confirmation"
-          accentColor="#B8860B"
-          iconBg="#FFF8E7"
-          borderColor="#B8860B"
-        />
-        <StatCard
-          icon="✓"
-          label="APPROVED"
-          count={approvedCount}
-          sub="Successfully booked"
-          accentColor="#4A6741"
-          iconBg="#EEF3E8"
-          borderColor="#4A6741"
-        />
-        <StatCard
-          icon="✕"
-          label="REJECTED"
-          count={rejectedCount}
-          sub="Cancelled bookings"
-          accentColor="#9B2335"
-          iconBg="#FDECEA"
-          borderColor="#9B2335"
-        />
-      </div>
-
-      {/* ── Toolbar ── */}
-      <div style={s.toolbar}>
-        <input
-          type="text"
-          placeholder="Search by customer name or booking ID..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={s.searchInput}
-          onFocus={e => (e.target.style.borderColor = "#7A8C3A")}
-          onBlur={e  => (e.target.style.borderColor = "#D6D3C0")}
-        />
-        <select
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
-          style={s.select}
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="rejected">Rejected</option>
-        </select>
-      </div>
-
-      {/* ── Table ── */}
-      <div style={s.tableWrap}>
-        <table style={s.table}>
-          <thead>
-            <tr style={s.theadRow}>
-              {["Booking ID","Customer","Event Type","Date","Guests","Status","Actions"].map(h => (
-                <th key={h} style={s.th}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredBookings.length === 0 ? (
-              <tr>
-                <td colSpan={7} style={s.emptyCell}>No bookings found</td>
-              </tr>
-            ) : filteredBookings.map((b, i) => (
-              <tr
-                key={b._id}
-                style={{ ...s.tr, backgroundColor: i % 2 === 0 ? "#fff" : "#FAFAF5" }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#F2F5E8")}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = i % 2 === 0 ? "#fff" : "#FAFAF5")}
-              >
-                <td style={{ ...s.td, fontFamily:"monospace", fontSize:12, color:"#9A9580" }}>
-                  {b.bookingId || "-"}
-                </td>
-                <td style={{ ...s.td, fontWeight:600, color:"#2C2C1E" }}>{b.fullName}</td>
-                <td style={s.td}>{b.eventType}</td>
-                <td style={s.td}>
-                  {new Date(b.eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}
-                </td>
-                <td style={{ ...s.td, textAlign:"center" }}>{b.guests}</td>
-                <td style={s.td}><StatusBadge status={b.status} /></td>
-                <td style={s.td}>
-                  <div style={{ display:"flex", gap:6, flexWrap:"wrap", alignItems:"center" }}>
-                    <button style={s.btnView} onClick={() => setSelectedBooking(b)}>
-                      View Details
-                    </button>
-                    {b.status === "pending" && (
-                      <>
-                        <button style={s.btnApprove} onClick={() => updateStatus(b._id, "approved")}>
-                          Approve
-                        </button>
-                        <button style={s.btnReject} onClick={() => updateStatus(b._id, "rejected")}>
-                          Reject
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ── Modal ── */}
-      {selectedBooking && (
-        <div style={s.overlay}>
-          <div style={s.modal}>
-            {/* Modal Header */}
-            <div style={{ borderBottom:"1px solid #E8E5D4", paddingBottom:16, marginBottom:16, display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-              <div>
-                <h2 style={{ fontSize:20, fontWeight:700, color:"#2C2C1E", fontFamily:"Georgia, serif", margin:0 }}>
-                  Booking Details
-                </h2>
-                <p style={{ fontSize:12, color:"#9A9580", marginTop:4 }}>
-                  {selectedBooking.bookingId || "-"}
-                </p>
-              </div>
-              <StatusBadge status={selectedBooking.status} />
-            </div>
-
-            {/* Modal Rows */}
-            {[
-              ["Name",   selectedBooking.fullName],
-              ["Email",  selectedBooking.email],
-              ["Phone",  selectedBooking.phone],
-              ["Event",  selectedBooking.eventType],
-              ["Date",   new Date(selectedBooking.eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})],
-              ["Guests", selectedBooking.guests],
-            ].map(([label, value]) => (
-              <div key={label} style={s.modalRow}>
-                <span style={s.modalLabel}>{label}</span>
-                <span style={s.modalValue}>{value}</span>
-              </div>
-            ))}
-
-            {/* Modal Footer */}
-            <div style={{ display:"flex", justifyContent:"flex-end", gap:8, marginTop:20, paddingTop:16, borderTop:"1px solid #E8E5D4" }}>
-              {selectedBooking.status === "pending" && (
-                <>
-                  <button style={s.btnApprove} onClick={() => updateStatus(selectedBooking._id, "approved")}>
-                    Approve
-                  </button>
-                  <button style={s.btnReject} onClick={() => updateStatus(selectedBooking._id, "rejected")}>
-                    Reject
-                  </button>
-                </>
-              )}
-              <button style={s.btnClose} onClick={() => setSelectedBooking(null)}>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 6,
+      padding: "3px 12px", borderRadius: 100,
+      background: st.bg, color: st.color,
+      border: `1px solid ${st.border}`,
+      fontSize: 11, fontWeight: 600,
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: dotColor[s] || "#c9a84c", flexShrink: 0 }} />
+      {status}
+    </span>
   );
 }
 
-// ── StatCard ──
-const StatCard = ({ icon, label, count, sub, accentColor, iconBg, borderColor }) => (
-  <div style={{
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    border: "1px solid #E8E5D4",
-    borderTop: `3px solid ${borderColor}`,
-    padding: "20px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-  }}>
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-      <span style={{ fontSize:11, fontWeight:600, letterSpacing:"0.08em", color:"#9A9580" }}>{label}</span>
-      <div style={{ width:36, height:36, borderRadius:8, backgroundColor:iconBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>
-        {icon}
-      </div>
-    </div>
-    <div style={{ fontSize:36, fontWeight:700, color:accentColor, fontFamily:"Georgia, serif", lineHeight:1 }}>
-      {count}
-    </div>
-    <div style={{ fontSize:12, color:"#9A9580" }}>{sub}</div>
-  </div>
-);
-
-// ── StatusBadge ──
-const StatusBadge = ({ status }) => {
-  const map = {
-    pending:   { bg:"#FFF8E7", color:"#B8860B", border:"#F0D070" },
-    approved:  { bg:"#EEF3E8", color:"#4A6741", border:"#B8CEA8" },
-    confirmed: { bg:"#EEF3E8", color:"#4A6741", border:"#B8CEA8" },
-    rejected:  { bg:"#FDECEA", color:"#9B2335", border:"#F5B8BE" },
-    cancelled: { bg:"#FDECEA", color:"#9B2335", border:"#F5B8BE" },
+function EventDot({ status }) {
+  const s = status?.toLowerCase();
+  const color = {
+    ongoing: "#6b8f2a", confirmed: "#c9a84c", preparing: "#a07830",
+    pending: "#c9a000", cancelled: "#dc2626", completed: "#9a9a7a",
   };
-  const st = map[status?.toLowerCase()] || { bg:"#F0EFE6", color:"#6B6A5E", border:"#D6D3C0" };
+  return <span style={{ width: 10, height: 10, borderRadius: "50%", background: color[s] || "#c9a84c", flexShrink: 0, marginTop: 4 }} />;
+}
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState(null);
+  const [todayEvents, setTodayEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const [dashRes, eventsRes] = await Promise.all([
+          fetch("/api/admin/dashboard"),
+          fetch("/api/admin/today-events"),
+        ]);
+        if (!dashRes.ok) throw new Error("Failed");
+        const dashData = await dashRes.json();
+        setStats(dashData);
+        if (eventsRes.ok) {
+          const eventsData = await eventsRes.json();
+          console.log("TODAY EVENTS DATA:", eventsData.todayEvents);
+          setTodayEvents(eventsData.todayEvents || []);
+        }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
+    };
+    fetchAll();
+  }, []);
+
+  async function handleLogout() {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+      router.push("/admin/login");
+      router.refresh();
+    } catch (e) { console.error(e); }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"70vh", background:"#f5f2e8" }}>
+        <div style={{ width:52, height:52, borderRadius:"50%", border:"3px solid #e2c06a", borderTopColor:"#8B9D3A", animation:"spin 0.9s linear infinite" }} />
+        <p style={{ marginTop:16, fontSize:12, letterSpacing:"0.25em", textTransform:"uppercase", color:"#8a7a4a" }}>Loading...</p>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"70vh" }}>
+        <div style={{ padding:32, borderRadius:16, border:"1px solid #f4a4a4", background:"#fde8e8", textAlign:"center" }}>
+          <p style={{ color:"#9b1c1c" }}>⚠️ Failed to load dashboard data</p>
+        </div>
+      </div>
+    );
+  }
+
+  const cards = [
+    { title: "Total Bookings", value: stats.totalBookings,   subtext: "All time",             icon: CalendarCheck, accent: "#8B9D3A", lightBg: "#f0f4d8", iconColor: "#6b7a2a" },
+    { title: "Pending",        value: stats.pendingBookings, subtext: "Awaiting confirmation", icon: Clock,         accent: "#C9A84C", lightBg: "#fdf6dc", iconColor: "#a07830" },
+    { title: "Confirmed",      value: stats.confirmedBookings, subtext: "Successfully booked", icon: CheckCircle,  accent: "#7a9230", lightBg: "#eaf2d0", iconColor: "#5a7020" },
+    { title: "Cancelled", value: stats.cancelledBookings, subtext: "Cancelled bookings", icon: XCircle, accent: "#bd3823", lightBg: "#fde8e8", iconColor: "#b91c1c" },
+  ];
+
   return (
-    <span style={{
-      display:"inline-block", padding:"4px 12px", borderRadius:20,
-      fontSize:11, fontWeight:600, letterSpacing:"0.05em",
-      backgroundColor:st.bg, color:st.color, border:`1px solid ${st.border}`,
-    }}>
-      {status?.charAt(0).toUpperCase() + status?.slice(1)}
-    </span>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+        * { box-sizing: border-box; }
+
+        .og-page {
+          min-height: 100vh;
+          background: #FFF8DC;
+          font-family: 'DM Sans', sans-serif;
+          color: #2a2a1a;
+          /* ✅ prevent horizontal overflow on mobile */
+          overflow-x: hidden;
+          max-width: 100vw;
+        }
+
+        .og-inner {
+          width: 100%;
+          padding: 16px 16px 32px;
+        }
+        @media (min-width: 768px) {
+          .og-inner { padding: 20px 24px 40px; }
+        }
+
+        /* ── Header ── */
+        .og-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        /* ✅ title wraps on mobile */
+        .og-title {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(26px, 6vw, 42px);
+          font-weight: 700;
+          color: #2a2a1a;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+          word-break: break-word;
+        }
+        .og-title span { color: #8B9D3A; }
+        .og-subtitle { font-size: 13px; color: #8a7a4a; margin-top: 6px; }
+        .og-date { font-size: 11px; color: #b0a070; margin-top: 2px; }
+
+        /* badges — hide on very small screens, show on sm+ */
+        .og-badges {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          flex-shrink: 0;
+          flex-wrap: wrap;
+        }
+        .og-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 100px;
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+        .og-badge-live  { background: #f0f4d8; border: 1px solid #c8d890; color: #5a7020; }
+        .og-badge-overview { background: #fdf6dc; border: 1px solid #e2c06a; color: #8a6010; }
+        .og-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #8B9D3A; animation: pulse-og 2s ease-in-out infinite; }
+        @keyframes pulse-og { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+        /* ── Stat cards ── */
+        .og-cards {
+          display: grid;
+          /* ✅ 2 cols on mobile, 4 on desktop */
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+        @media (min-width: 900px) {
+          .og-cards { grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px; }
+        }
+
+        .og-card {
+          background: #fff;
+          border-radius: 16px;
+          padding: 16px;
+          border: 1px solid #ede8d0;
+          box-shadow: 0 2px 12px rgba(139,157,58,0.06);
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+          position: relative;
+          overflow: hidden;
+          min-width: 0; /* ✅ prevent overflow */
+        }
+        @media (min-width: 768px) {
+          .og-card { padding: 22px; border-radius: 18px; }
+        }
+        .og-card:hover { transform: translateY(-4px); box-shadow: 0 10px 32px rgba(139,157,58,0.12); }
+        .og-card::before {
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+          background: var(--card-accent);
+          border-radius: 18px 18px 0 0;
+        }
+        .og-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+        .og-card-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        /* ✅ label wraps properly */
+        .og-card-label {
+          font-size: 9px;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #a09060;
+          text-align: right;
+          line-height: 1.3;
+          max-width: 80px;
+        }
+        .og-card-value {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(24px, 5vw, 34px);
+          font-weight: 700;
+          line-height: 1;
+          margin-bottom: 4px;
+        }
+        .og-card-sub { font-size: 10px; color: #b0a070; }
+        .og-card-line { margin-top: 12px; height: 1px; background: linear-gradient(90deg, var(--card-accent) 0%, transparent 100%); opacity: 0.3; border-radius: 4px; }
+
+        /* ── Panels ── */
+        .og-panel {
+          background: #fff;
+          border-radius: 16px;
+          border: 1px solid #ede8d0;
+          box-shadow: 0 2px 12px rgba(139,157,58,0.06);
+          overflow: hidden;
+          position: relative;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+        .og-panel-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 18px;
+          border-bottom: 1px solid #f0ead8;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .og-panel-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .og-panel-title { font-size: 13px; font-weight: 600; color: #2a2a1a; }
+        .og-panel-sub { font-size: 11px; color: #a09060; margin-top: 1px; }
+
+        /* ── Charts row ── */
+        .og-charts {
+          display: grid;
+          /* ✅ single col on mobile, 2 col on desktop */
+          grid-template-columns: 1fr;
+          gap: 16px;
+          margin-bottom: 20px;
+        }
+        @media (min-width: 860px) {
+          .og-charts { grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+        }
+
+        /* ── Today's events table ── */
+        /* ✅ scrollable table on mobile */
+        .og-table-wrap {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: 10px 16px 20px;
+        }
+        @media (min-width: 768px) {
+          .og-table-wrap { padding: 10px 20px 20px; }
+        }
+        .og-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          min-width: 520px; /* ✅ forces scroll on very small screens */
+        }
+        @media (min-width: 768px) {
+          .og-table { font-size: 13px; min-width: unset; }
+        }
+        .og-table th {
+          padding: 10px 10px;
+          background: #f7f4eb;
+          text-align: left;
+          font-weight: 600;
+          color: #6a6040;
+          white-space: nowrap;
+        }
+        .og-table td {
+          padding: 10px 10px;
+          border-bottom: 1px solid #eee;
+          color: #2a2a1a;
+          vertical-align: middle;
+        }
+        .og-table tr:last-child td { border-bottom: none; }
+        .og-table tr:hover td { background: #fdfaf0; }
+
+        /* ── Events empty state ── */
+        .og-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; gap: 10px; }
+        .og-count-pill { background: #f0f4d8; border: 1px solid #c8d890; color: #5a7020; font-size: 11px; font-weight: 600; padding: 3px 12px; border-radius: 100px; white-space: nowrap; }
+
+        /* ── Animations ── */
+        .og-fade { animation: og-rise 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+        .d1{animation-delay:0.05s} .d2{animation-delay:0.1s} .d3{animation-delay:0.15s}
+        .d4{animation-delay:0.2s} .d5{animation-delay:0.27s} .d6{animation-delay:0.34s}
+        @keyframes og-rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+      `}</style>
+
+      <div className="og-page">
+        <div className="og-inner">
+
+          {/* Header */}
+          <header className="og-header og-fade">
+            <div>
+              <h1 className="og-title">Admin <span>Dashboard</span></h1>
+              <p className="og-subtitle">Welcome back! Here's your catering business overview</p>
+              <p className="og-date">{new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</p>
+            </div>
+            <div className="og-badges">
+              <div className="og-badge og-badge-live">
+                <span className="og-live-dot" />
+                Live
+              </div>
+              <div className="og-badge og-badge-overview">
+                <Activity size={12} />
+                Overview
+              </div>
+            </div>
+          </header>
+
+          {/* Stat Cards */}
+          <div className="og-cards">
+            {cards.map((card, i) => {
+              const Icon = card.icon;
+              return (
+                <div key={card.title} className={`og-card og-fade d${i+1}`} style={{"--card-accent": card.accent}}>
+                  <div className="og-card-top">
+                    <div className="og-card-icon" style={{background: card.lightBg}}>
+                      <Icon size={17} style={{color: card.iconColor}} />
+                    </div>
+                    <span className="og-card-label">{card.title}</span>
+                  </div>
+                  <div className="og-card-value" style={{color: card.accent}}>{card.value}</div>
+                  <div className="og-card-sub">{card.subtext}</div>
+                  <div className="og-card-line" />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Charts */}
+          <div className="og-charts og-fade d5">
+            {/* Monthly Bookings */}
+            <div className="og-panel">
+              <div className="og-panel-head">
+                <div style={{display:"flex", alignItems:"center", gap:10}}>
+                  <div className="og-panel-icon" style={{background:"#f0f4d8"}}>
+                    <TrendingUp size={15} style={{color:"#6b7a2a"}} />
+                  </div>
+                  <div>
+                    <div className="og-panel-title">Monthly Bookings</div>
+                    <div className="og-panel-sub">Last 12 months analysis</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ width: "100%", height: 280, padding: "10px 12px 16px 8px" }}>
+                <ChartSection data={stats.monthlyData || []} />
+              </div>
+            </div>
+
+            {/* Pie */}
+            <div className="og-panel">
+              <div className="og-panel-head">
+                <div style={{display:"flex", alignItems:"center", gap:10}}>
+                  <div className="og-panel-icon" style={{background:"#fdf6dc"}}>
+                    <CalendarCheck size={15} style={{color:"#a07830"}} />
+                  </div>
+                  <div>
+                    <div className="og-panel-title">Event Types Distribution</div>
+                    <div className="og-panel-sub">Bookings by category</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{padding:"16px 16px 20px", height: 280}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={eventDistributionData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value">
+                      {eventDistributionData.map((_, index) => (
+                        <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(v) => [`${v}%`, "Share"]} contentStyle={{borderRadius:10, border:"1px solid #e2d89a", fontSize:12}} />
+                    <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{color:"#8a7a4a",fontSize:11}}>{v}</span>} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Today's Events */}
+          <div className="og-panel og-fade d6">
+            <div className="og-panel-head">
+              <div style={{display:"flex", alignItems:"center", gap:10}}>
+                <div className="og-panel-icon" style={{background:"#eaf2d0"}}>
+                  <CalendarCheck size={15} style={{color:"#5a7020"}} />
+                </div>
+                <div>
+                  <div className="og-panel-title">Today's Events</div>
+                  <div className="og-panel-sub">Active catering events scheduled for today</div>
+                </div>
+              </div>
+              <span className="og-count-pill">{todayEvents.length} event{todayEvents.length !== 1 ? "s" : ""}</span>
+            </div>
+
+            {todayEvents.length === 0 ? (
+              <div className="og-empty">
+                <div style={{width:48,height:48,borderRadius:"50%",background:"#f0f4d8",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <CalendarCheck size={20} style={{color:"#8B9D3A"}} />
+                </div>
+                <p style={{fontSize:13,color:"#a09060",fontWeight:500}}>No events scheduled for today</p>
+                <p style={{fontSize:11,color:"#c0b080"}}>Enjoy your free day!</p>
+              </div>
+            ) : (
+              /* ✅ scrollable table wrapper for mobile */
+              <div className="og-table-wrap">
+                <table className="og-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Event</th>
+                      <th>Venue</th>
+                      <th>Time</th>
+                      <th>Guests</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {todayEvents.map((event, i) => (
+                      <tr key={event._id || event.id || i}>
+                        <td>{event.userId?.name || event.fullName || event.customerName || event.name || "—"}</td>
+                        <td>{event.eventType || event.type || event.eventName || "—"}</td>
+                        <td>{event.venue || event.location || event.venueName || "—"}</td>
+                        <td>
+                          {event.eventTime || event.time ||
+                            (event.eventDate
+                              ? new Date(event.eventDate).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
+                              : "—")}
+                        </td>
+                        <td>{event.guestCount || event.guests || event.numberOfGuests || "—"}</td>
+                        <td><StatusBadge status={event.status || "Pending"} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </>
   );
-};
-
-// ── Styles ──
-const s = {
-  page: {
-    padding: "28px 32px",
-    backgroundColor: "#FFF8DC",
-    minHeight: "100vh",
-    fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
-  },
-  pageTitle: {
-    fontSize: 32,
-    fontWeight: 800,
-    color: "#2C2C1E",
-    fontFamily: "Georgia, serif",
-    margin: 0,
-  },
-  pageSub:  { fontSize:14, color:"#6B6A5E", marginTop:6 },
-  dateText: { fontSize:12, color:"#9A9580", marginTop:2 },
-
-  cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: 16,
-    marginBottom: 24,
-  },
-
-  toolbar: { display:"flex", gap:10, marginBottom:16 },
-  searchInput: {
-    flex:1, padding:"10px 16px",
-    border:"1px solid #D6D3C0", borderRadius:8,
-    backgroundColor:"#fff", color:"#2C2C1E",
-    fontSize:14, outline:"none",
-    fontFamily:"inherit",
-  },
-  select: {
-    padding:"10px 14px",
-    border:"1px solid #D6D3C0", borderRadius:8,
-    backgroundColor:"#273B09", color:"#fff",
-    fontSize:14, outline:"none", cursor:"pointer",
-    fontFamily:"inherit",
-  },
-
-  tableWrap: {
-    backgroundColor:"#fff",
-    borderRadius:12,
-    border:"1px solid #E8E5D4",
-    overflow:"hidden",
-    boxShadow:"0 2px 12px rgba(0,0,0,0.04)",
-  },
-  table: { width:"100%", borderCollapse:"collapse" },
-
-  theadRow: { backgroundColor: "#273B09" },
-  th: {
-  padding: "13px 16px",
-  fontSize: 11, fontWeight: 600, color: "#E8E5D4",  // ← golden
-  textAlign: "left", letterSpacing: "0.07em", textTransform: "uppercase",
-  borderBottom: "1px solid #2c4508",},
-  td: {
-    padding:"14px 16px",
-    fontSize:13, color:"#3C3B2E",
-    borderBottom:"1px solid #F0EFE6",
-    verticalAlign:"middle",
-  },
-  tr: { transition:"background 0.12s" },
-  emptyCell: { textAlign:"center", padding:48, color:"#B0AFA4", fontSize:14 },
-
-  btnView: {
-    padding:"5px 12px", borderRadius:6,
-    border:"1px solid #C8D8F0",
-    backgroundColor:"#EBF2FB", color:"#2E5FA3",
-    fontSize:12, cursor:"pointer", fontWeight:500,
-  },
-  btnApprove: {
-    padding:"5px 12px", borderRadius:6,
-    border:"1px solid #B8CEA8",
-    backgroundColor:"#EEF3E8", color:"#4A6741",
-    fontSize:12, cursor:"pointer", fontWeight:500,
-  },
-  btnReject: {
-    padding:"5px 12px", borderRadius:6,
-    border:"1px solid #F5B8BE",
-    backgroundColor:"#FDECEA", color:"#9B2335",
-    fontSize:12, cursor:"pointer", fontWeight:500,
-  },
-  btnClose: {
-    padding:"8px 20px", borderRadius:8,
-    border:"1px solid #D6D3C0",
-    backgroundColor:"#F5F3E4", color:"#3C3B2E",
-    fontSize:13, cursor:"pointer", fontWeight:500,
-  },
-
-  overlay: {
-    position:"fixed", inset:0,
-    background:"rgba(30,28,20,0.5)",
-    display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000,
-  },
-  modal: {
-    backgroundColor:"#fff", borderRadius:14,
-    border:"1px solid #E8E5D4",
-    padding:28, width:440, maxWidth:"95vw",
-    boxShadow:"0 16px 48px rgba(0,0,0,0.14)",
-  },
-  modalRow: {
-    display:"flex", justifyContent:"space-between", alignItems:"center",
-    padding:"10px 0", borderBottom:"1px solid #F0EFE6", fontSize:13,
-  },
-  modalLabel: { color:"#9A9580", fontSize:13 },
-  modalValue: { color:"#2C2C1E", fontWeight:500, textAlign:"right", maxWidth:"65%" },
-};
+}
