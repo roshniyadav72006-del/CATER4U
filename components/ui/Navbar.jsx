@@ -188,7 +188,7 @@ export default function Navbar() {
                 {/* CLICKABLE HEADER */}
                 <span
                   onClick={() => setMobileDropdown(!mobileDropdown)}
-                  className="cursor-pointer text-yellow-400 font-semibold"
+                  className="cursor-pointer text-white font-semibold"
                 >
                   Feedback ▾
                 </span>

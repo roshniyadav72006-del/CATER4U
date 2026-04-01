@@ -123,87 +123,216 @@ export default function DashboardPage() {
     { title: "Pending",        value: stats.pendingBookings, subtext: "Awaiting confirmation", icon: Clock,         accent: "#C9A84C", lightBg: "#fdf6dc", iconColor: "#a07830" },
     { title: "Confirmed",      value: stats.confirmedBookings, subtext: "Successfully booked", icon: CheckCircle,  accent: "#7a9230", lightBg: "#eaf2d0", iconColor: "#5a7020" },
     { title: "Cancelled", value: stats.cancelledBookings, subtext: "Cancelled bookings", icon: XCircle, accent: "#bd3823", lightBg: "#fde8e8", iconColor: "#b91c1c" },
-   ];
-
+  ];
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap');
-        .og-page { min-height:100vh; background:#FFF8DC; font-family:'DM Sans',sans-serif; color:#2a2a1a; }
-        .og-inner {   width:100%;   padding:2px 20px; }
 
-        /* header */
-        .og-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:16px; }
-        .og-title { font-family:'Playfair Display',serif; font-size:42px; font-weight:700; color:#2a2a1a; letter-spacing:-0.02em; line-height:1; }
-        .og-title span { color:#8B9D3A; }
-        .og-subtitle { font-size:13px; color:#8a7a4a; margin-top:6px; }
-        .og-date { font-size:11px; color:#b0a070; margin-top:2px; }
-        .og-badges { display:flex; gap:10px; align-items:center; }
-        .og-badge { display:flex; align-items:center; gap:7px; padding:7px 16px; border-radius:100px; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; }
-        .og-badge-live { background:#f0f4d8; border:1px solid #c8d890; color:#5a7020; }
-        .og-badge-overview { background:#fdf6dc; border:1px solid #e2c06a; color:#8a6010; }
-        .og-live-dot { width:7px; height:7px; border-radius:50%; background:#8B9D3A; animation:pulse-og 2s ease-in-out infinite; }
+        * { box-sizing: border-box; }
+
+        .og-page {
+          min-height: 100vh;
+          background: #FFF8DC;
+          font-family: 'DM Sans', sans-serif;
+          color: #2a2a1a;
+          /* ✅ prevent horizontal overflow on mobile */
+          overflow-x: hidden;
+          max-width: 100vw;
+        }
+
+        .og-inner {
+          width: 100%;
+          padding: 16px 16px 32px;
+        }
+        @media (min-width: 768px) {
+          .og-inner { padding: 20px 24px 40px; }
+        }
+
+        /* ── Header ── */
+        .og-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        /* ✅ title wraps on mobile */
+        .og-title {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(26px, 6vw, 42px);
+          font-weight: 700;
+          color: #2a2a1a;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+          word-break: break-word;
+        }
+        .og-title span { color: #8B9D3A; }
+        .og-subtitle { font-size: 13px; color: #8a7a4a; margin-top: 6px; }
+        .og-date { font-size: 11px; color: #b0a070; margin-top: 2px; }
+
+        /* badges — hide on very small screens, show on sm+ */
+        .og-badges {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          flex-shrink: 0;
+          flex-wrap: wrap;
+        }
+        .og-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 100px;
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+        .og-badge-live  { background: #f0f4d8; border: 1px solid #c8d890; color: #5a7020; }
+        .og-badge-overview { background: #fdf6dc; border: 1px solid #e2c06a; color: #8a6010; }
+        .og-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #8B9D3A; animation: pulse-og 2s ease-in-out infinite; }
         @keyframes pulse-og { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
 
-        /* stat cards */
-        .og-cards {  display:grid;  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));  gap:18px;
-           margin-bottom:24px;}
-        @media(max-width:900px){.og-cards{grid-template-columns:repeat(2,1fr)}}
-        @media(max-width:520px){.og-cards{grid-template-columns:1fr}}
+        /* ── Stat cards ── */
+        .og-cards {
+          display: grid;
+          /* ✅ 2 cols on mobile, 4 on desktop */
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+        @media (min-width: 900px) {
+          .og-cards { grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px; }
+        }
 
         .og-card {
-          background:#fff;
-          border-radius:18px;
-          padding:24px;
-          border:1px solid #ede8d0;
-          box-shadow:0 2px 12px rgba(139,157,58,0.06);
-          transition:transform 0.25s ease,box-shadow 0.25s ease;
-          position:relative; overflow:hidden;
+          background: #fff;
+          border-radius: 16px;
+          padding: 16px;
+          border: 1px solid #ede8d0;
+          box-shadow: 0 2px 12px rgba(139,157,58,0.06);
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+          position: relative;
+          overflow: hidden;
+          min-width: 0; /* ✅ prevent overflow */
         }
-        .og-card:hover { transform:translateY(-4px); box-shadow:0 10px 32px rgba(139,157,58,0.12); }
+        @media (min-width: 768px) {
+          .og-card { padding: 22px; border-radius: 18px; }
+        }
+        .og-card:hover { transform: translateY(-4px); box-shadow: 0 10px 32px rgba(139,157,58,0.12); }
         .og-card::before {
-          content:''; position:absolute; top:0; left:0; right:0; height:3px;
-          background:var(--card-accent);
-          border-radius:18px 18px 0 0;
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+          background: var(--card-accent);
+          border-radius: 18px 18px 0 0;
         }
-        .og-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; }
-        .og-card-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
-        .og-card-label { font-size:10px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:#a09060; text-align:right; }
-        .og-card-value { font-family:'Playfair Display',serif; font-size:34px; font-weight:700; line-height:1; margin-bottom:4px; }
-        .og-card-sub { font-size:11px; color:#b0a070; }
-        .og-card-line { margin-top:16px; height:1px; background:linear-gradient(90deg,var(--card-accent) 0%,transparent 100%); opacity:0.3; border-radius:4px; }
+        .og-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+        .og-card-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        /* ✅ label wraps properly */
+        .og-card-label {
+          font-size: 9px;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #a09060;
+          text-align: right;
+          line-height: 1.3;
+          max-width: 80px;
+        }
+        .og-card-value {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(24px, 5vw, 34px);
+          font-weight: 700;
+          line-height: 1;
+          margin-bottom: 4px;
+        }
+        .og-card-sub { font-size: 10px; color: #b0a070; }
+        .og-card-line { margin-top: 12px; height: 1px; background: linear-gradient(90deg, var(--card-accent) 0%, transparent 100%); opacity: 0.3; border-radius: 4px; }
 
-        /* panels */
-        .og-panel { background:#fff; border-radius:18px; border:1px solid #ede8d0; box-shadow:0 2px 12px rgba(139,157,58,0.06); overflow:hidden;position: relative;  z-index: 2;   }
-        .og-panel-head { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid #f0ead8; }
-        .og-panel-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
-        .og-panel-title { font-size:14px; font-weight:600; color:#2a2a1a; }
-        .og-panel-sub { font-size:11px; color:#a09060; margin-top:1px; }
+        /* ── Panels ── */
+        .og-panel {
+          background: #fff;
+          border-radius: 16px;
+          border: 1px solid #ede8d0;
+          box-shadow: 0 2px 12px rgba(139,157,58,0.06);
+          overflow: hidden;
+          position: relative;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+        .og-panel-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 18px;
+          border-bottom: 1px solid #f0ead8;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .og-panel-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .og-panel-title { font-size: 13px; font-weight: 600; color: #2a2a1a; }
+        .og-panel-sub { font-size: 11px; color: #a09060; margin-top: 1px; }
 
-        /* charts row */
-        .og-charts { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px;,align-items: stretch; }
-        @media(max-width:860px){.og-charts{grid-template-columns:1fr}}
-        .og-panel {  display: flex;  flex-direction: column;  overflow: hidden;}
-        .og-panel > div { min-height: 0;}
-        .recharts-responsive-container { min-width: 0 !important;}
-        /* events */
-        .og-event-row { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid #f5f0e0; transition:background 0.15s; }
-        .og-event-row:last-child { border-bottom:none; }
-        .og-event-row:hover { background:#fdfaf0; }
-        .og-event-left { display:flex; align-items:flex-start; gap:12px; min-width:0; }
-        .og-event-name { font-size:13px; font-weight:600; color:#2a2a1a; }
-        .og-event-venue { font-size:11px; color:#a09060; margin-top:2px; }
-        .og-event-right { display:flex; align-items:center; gap:20px; flex-shrink:0; margin-left:16px; }
-        .og-event-meta { display:flex; align-items:center; gap:5px; color:#8a7a4a; font-size:11px; }
-        .og-count-pill { background:#f0f4d8; border:1px solid #c8d890; color:#5a7020; font-size:11px; font-weight:600; padding:3px 12px; border-radius:100px; }
-        .og-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:56px 24px; gap:10px; }
-        .chart-fix {  position: relative;  z-index: 10;  background: #ffffff;}
-        .og-panel > div {  min-height: 0;}
-        .recharts-responsive-container {  min-width: 0;}
+        /* ── Charts row ── */
+        .og-charts {
+          display: grid;
+          /* ✅ single col on mobile, 2 col on desktop */
+          grid-template-columns: 1fr;
+          gap: 16px;
+          margin-bottom: 20px;
+        }
+        @media (min-width: 860px) {
+          .og-charts { grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+        }
 
-        /* fade in */
-        .og-fade { animation:og-rise 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+        /* ── Today's events table ── */
+        /* ✅ scrollable table on mobile */
+        .og-table-wrap {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: 10px 16px 20px;
+        }
+        @media (min-width: 768px) {
+          .og-table-wrap { padding: 10px 20px 20px; }
+        }
+        .og-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          min-width: 520px; /* ✅ forces scroll on very small screens */
+        }
+        @media (min-width: 768px) {
+          .og-table { font-size: 13px; min-width: unset; }
+        }
+        .og-table th {
+          padding: 10px 10px;
+          background: #f7f4eb;
+          text-align: left;
+          font-weight: 600;
+          color: #6a6040;
+          white-space: nowrap;
+        }
+        .og-table td {
+          padding: 10px 10px;
+          border-bottom: 1px solid #eee;
+          color: #2a2a1a;
+          vertical-align: middle;
+        }
+        .og-table tr:last-child td { border-bottom: none; }
+        .og-table tr:hover td { background: #fdfaf0; }
+
+        /* ── Events empty state ── */
+        .og-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; gap: 10px; }
+        .og-count-pill { background: #f0f4d8; border: 1px solid #c8d890; color: #5a7020; font-size: 11px; font-weight: 600; padding: 3px 12px; border-radius: 100px; white-space: nowrap; }
+
+        /* ── Animations ── */
+        .og-fade { animation: og-rise 0.5s cubic-bezier(0.16,1,0.3,1) both; }
         .d1{animation-delay:0.05s} .d2{animation-delay:0.1s} .d3{animation-delay:0.15s}
         .d4{animation-delay:0.2s} .d5{animation-delay:0.27s} .d6{animation-delay:0.34s}
         @keyframes og-rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
@@ -239,7 +368,7 @@ export default function DashboardPage() {
                 <div key={card.title} className={`og-card og-fade d${i+1}`} style={{"--card-accent": card.accent}}>
                   <div className="og-card-top">
                     <div className="og-card-icon" style={{background: card.lightBg}}>
-                      <Icon size={18} style={{color: card.iconColor}} />
+                      <Icon size={17} style={{color: card.iconColor}} />
                     </div>
                     <span className="og-card-label">{card.title}</span>
                   </div>
@@ -253,24 +382,23 @@ export default function DashboardPage() {
 
           {/* Charts */}
           <div className="og-charts og-fade d5">
-            {/* Revenue */}
-            <div className="og-panel chart-fix">
-             <div className="og-panel-head">
-               <div style={{display:"flex", alignItems:"center", gap:10}}>
-                 <div className="og-panel-icon" style={{background:"#f0f4d8"}}>
-                     <TrendingUp size={15} style={{color:"#6b7a2a"}} />
+            {/* Monthly Bookings */}
+            <div className="og-panel">
+              <div className="og-panel-head">
+                <div style={{display:"flex", alignItems:"center", gap:10}}>
+                  <div className="og-panel-icon" style={{background:"#f0f4d8"}}>
+                    <TrendingUp size={15} style={{color:"#6b7a2a"}} />
                   </div>
                   <div>
-               <div className="og-panel-title">Monthly Bookings</div>
-             <div className="og-panel-sub">Last 12 months analysis</div>
+                    <div className="og-panel-title">Monthly Bookings</div>
+                    <div className="og-panel-sub">Last 12 months analysis</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ width: "100%", height: 280, padding: "10px 12px 16px 8px" }}>
+                <ChartSection data={stats.monthlyData || []} />
+              </div>
             </div>
-         </div>
-         </div>
-
-           <div style={{ width: "100%", height: 320, padding: "10px 20px 20px 10px" }}>
-              <ChartSection data={stats.monthlyData || []} />
-           </div>
-          </div>
 
             {/* Pie */}
             <div className="og-panel">
@@ -285,16 +413,16 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              <div style={{padding:24, height:300}}>
+              <div style={{padding:"16px 16px 20px", height: 280}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={eventDistributionData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
+                    <Pie data={eventDistributionData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value">
                       {eventDistributionData.map((_, index) => (
                         <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip formatter={(v) => [`${v}%`, "Share"]} contentStyle={{borderRadius:10, border:"1px solid #e2d89a", fontSize:12}} />
-                    <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{color:"#8a7a4a",fontSize:12}}>{v}</span>} />
+                    <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{color:"#8a7a4a",fontSize:11}}>{v}</span>} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -325,69 +453,38 @@ export default function DashboardPage() {
                 <p style={{fontSize:11,color:"#c0b080"}}>Enjoy your free day!</p>
               </div>
             ) : (
-              <div style={{ padding: "10px 20px 20px 20px" }}>
-  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-    <thead>
-      <tr style={{ background: "#f7f4eb", textAlign: "left" }}>
-        <th style={{ padding: "10px" }}>Name</th>
-        <th style={{ padding: "10px" }}>Event</th>
-        <th style={{ padding: "10px" }}>Venue</th>
-        <th style={{ padding: "10px" }}>Time</th>
-        <th style={{ padding: "10px" }}>Guests</th>
-        <th style={{ padding: "10px" }}>Status</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {todayEvents.map((event, i) => (
-    <tr
-      key={event._id || event.id || i}
-      style={{ borderBottom: "1px solid #eee" }}    >
-      {/* Customer Name */}
-      <td style={{ padding: "10px" }}>
-        {event.userId?.name ||
-          event.fullName ||
-          event.customerName ||
-          event.name ||
-          "—"}
-      </td>
-      {/* Event Type */}
-      <td style={{ padding: "10px" }}>
-        {event.eventType || event.type || event.eventName || "—"}
-      </td>
-
-      {/* Venue */}
-      <td style={{ padding: "10px" }}>
-        {event.venue || event.location || event.venueName || "—"}
-      </td>
-
-      {/* Time */}
-      <td style={{ padding: "10px" }}>
-        {event.eventTime ||
-          event.time ||
-          (event.eventDate
-            ? new Date(event.eventDate).toLocaleTimeString("en-IN", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "—")}
-      </td>
-      {/* Guests */}
-      <td style={{ padding: "10px" }}>
-        {event.guestCount ||
-          event.guests ||
-          event.numberOfGuests ||
-          "—"}
-      </td>
-         {/* Status */}
-         <td style={{ padding: "10px" }}>
-           <StatusBadge status={event.status || "Pending"} />
-            </td>
-          </tr>
-        ))}
-       </tbody>
-          </table>
-          </div>
+              /* ✅ scrollable table wrapper for mobile */
+              <div className="og-table-wrap">
+                <table className="og-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Event</th>
+                      <th>Venue</th>
+                      <th>Time</th>
+                      <th>Guests</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {todayEvents.map((event, i) => (
+                      <tr key={event._id || event.id || i}>
+                        <td>{event.userId?.name || event.fullName || event.customerName || event.name || "—"}</td>
+                        <td>{event.eventType || event.type || event.eventName || "—"}</td>
+                        <td>{event.venue || event.location || event.venueName || "—"}</td>
+                        <td>
+                          {event.eventTime || event.time ||
+                            (event.eventDate
+                              ? new Date(event.eventDate).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
+                              : "—")}
+                        </td>
+                        <td>{event.guestCount || event.guests || event.numberOfGuests || "—"}</td>
+                        <td><StatusBadge status={event.status || "Pending"} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
