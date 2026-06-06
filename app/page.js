@@ -12,7 +12,7 @@ const specialties = [
     desc: "Authentic dal baati churma, gatte ki sabzi, ker sangri and more — straight from Rajasthan's rich culinary tradition.",
   },
   {
-    icon: "🥘",
+    icon: "",
     title: "Gujarati Thali",
     desc: "Complete shaadi thali with undhiyu, kadhi, dal dhokli, farsan, and the perfect balance of sweet and savory.",
   },
